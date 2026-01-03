@@ -1,0 +1,54 @@
+
+name: Train AI (Daily)
+
+on:
+  schedule:
+    - cron: '0 0 * * *' # Every midnight UTC
+  workflow_dispatch: # Manual trigger
+
+permissions:
+  contents: write
+
+jobs:
+  train:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+
+      - name: Install Dependencies
+        run: |
+          npm ci
+          # Install tfjs-node for acceleration (Linux)
+          npm install @tensorflow/tfjs-node --no-save
+          npm install -D ts-node typescript --no-save
+          # Ensure public/models exists
+          mkdir -p public/models
+
+      - name: Run Training Arena
+        # Increase memory limit just in case
+        run: |
+          export NODE_OPTIONS="--max-old-space-size=4096"
+          npx ts-node --skip-project scripts/train_dqn.ts
+
+      - name: Commit and Push if Champion Updated
+        run: |
+          git config --global user.name 'Junqi AI Trainer'
+          git config --global user.email 'ai-trainer@bot.com'
+          
+          # Check if public/models changed
+          if [[ -n $(git status --porcelain public/models) ]]; then
+            echo "Champion updated! Committing..."
+            git add public/models
+            git commit -m "🤖 AI Evolved: New Champion Model"
+            git push
+          else
+            echo "No improvement. Candidate rejected."
+          fi
