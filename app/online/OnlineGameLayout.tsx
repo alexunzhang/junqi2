@@ -74,16 +74,16 @@ export default function OnlineGameLayout() {
 
             {/* Content for SEO (Bottom) */}
             <article className="max-w-3xl w-full p-8 text-gray-300 text-sm leading-relaxed z-10 bg-black/40 rounded-xl border border-gray-800 backdrop-blur-md mb-8">
-                <h2 className="text-lg font-semibold text-gray-100 mb-3 border-b border-gray-700 pb-2">关于四国军棋 AI</h2>
+                <h2 className="text-lg font-semibold text-gray-100 mb-3 border-b border-gray-700 pb-2">关于四国军棋 AI (Deep Learning Edition)</h2>
                 <p className="mb-4">
-                    这是一个基于机器学习 (Q-Learning) 的四国军棋在线对战平台。我们的 AI 通过数万局的自我博弈，
-                    学会了复杂的战术配合、布阵策略和残局处理。无论您是新手还是老手，都能在这里找到合适的对手。
+                    这是一个基于深度强化学习 (Deep Q-Network) 的四国军棋在线对战平台。我们的 AI 通过与自己的镜像在云端进行数万局的"左右互搏" (Self-Play)，
+                    自主学会了复杂的战术配合、工兵探路、三角雷阵等高级策略。通过独特的"竞技场"机制，只有显著强于旧版本的模型才会被自动部署到线上。
                 </p>
                 <h3 className="font-medium text-gray-200 mt-4 mb-2">游戏特色</h3>
                 <ul className="list-disc list-inside space-y-1 ml-2 text-gray-400">
-                    <li><span className="text-yellow-500 font-bold">智能 AI 有脑子</span>：懂得虚张声势、三角雷、工兵探路等高级战术。</li>
-                    <li><span className="text-blue-400 font-bold">布阵学习系统</span>：AI 会根据您的风格推荐胜率最高的开局布阵。</li>
-                    <li><span className="text-green-400 font-bold">完全免费</span>：无内购，纯粹的策略竞技乐趣。</li>
+                    <li><span className="text-yellow-500 font-bold">深度神经网络</span>：利用卷积神经网络 (CNN) 分析棋盘大局，而非简单的规则搜索。</li>
+                    <li><span className="text-blue-400 font-bold">云端持续进化</span>：GitHub Actions 每天自动训练，您的每一次对局都在为 AI 提供学习数据。</li>
+                    <li><span className="text-green-400 font-bold">版本可视化</span>：右下角实时显示当前 AI 版本号与近期胜率，见证它的成长。</li>
                 </ul>
             </article>
 
