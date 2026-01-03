@@ -97,6 +97,17 @@ export class TrainingManager {
         this.isTraining = false;
     }
 
+    public resetWeights() {
+        this.neuralAgent = new NeuralAgent();
+        this.stats = {
+            gamesPlayed: 0,
+            team0Wins: 0,
+            team1Wins: 0,
+            avgGameLength: 0,
+            avgReward: 0,
+        };
+    }
+
     public async runTraining(numGames?: number): Promise<TrainingStats> {
         const gamesToRun = numGames ?? this.config.numGames;
         this.isTraining = true;
