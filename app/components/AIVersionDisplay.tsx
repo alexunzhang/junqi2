@@ -38,7 +38,8 @@ export default function AIVersionDisplay() {
     }, []);
 
     return (
-        <div className="fixed bottom-4 right-4 z-[100] text-[10px] text-gray-500 bg-black/80 px-3 py-1.5 rounded-full border border-gray-800 backdrop-blur-sm flex items-center gap-2 shadow-lg hover:bg-black/90 transition-colors cursor-help group">
+
+        <div className="fixed top-24 right-4 z-[9999] text-xs font-bold text-white bg-green-900/90 px-4 py-2 rounded-full border border-green-500 backdrop-blur-md flex items-center gap-2 shadow-[0_0_15px_rgba(0,255,0,0.3)] hover:scale-105 transition-all cursor-help group">
             <span className="relative flex h-2 w-2">
                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
                 <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>

@@ -51,10 +51,25 @@ export default function OnlineGameLayout() {
                 </aside>
 
                 {/* GAME AREA - Center Stage */}
-                <main className="flex-1 w-full flex justify-center min-w-0">
-                    <div className="w-full origin-top">
+                <main className="flex-1 w-full flex flex-col items-center min-w-0 gap-8">
+                    <div className="w-full origin-top flex justify-center">
                         <Board disableBackground={true} />
                     </div>
+
+                    {/* Game Description - Moved Here for Visibility */}
+                    <article className="max-w-3xl w-full p-8 text-gray-300 text-sm leading-relaxed z-10 bg-gray-900 rounded-xl border border-gray-700 shadow-2xl">
+                        <h2 className="text-lg font-semibold text-white mb-3 border-b border-gray-600 pb-2">关于四国军棋 AI (Deep Learning Edition)</h2>
+                        <p className="mb-4">
+                            这是一个基于深度强化学习 (Deep Q-Network) 的四国军棋在线对战平台。我们的 AI 通过与自己的镜像在云端进行数万局的"左右互搏" (Self-Play)，
+                            自主学会了复杂的战术配合、工兵探路、三角雷阵等高级策略。通过独特的"竞技场"机制，只有显著强于旧版本的模型才会被自动部署到线上。
+                        </p>
+                        <h3 className="font-medium text-gray-200 mt-4 mb-2">游戏特色</h3>
+                        <ul className="list-disc list-inside space-y-1 ml-2 text-gray-400">
+                            <li><span className="text-yellow-500 font-bold">深度神经网络</span>：利用卷积神经网络 (CNN) 分析棋盘大局，而非简单的规则搜索。</li>
+                            <li><span className="text-blue-400 font-bold">云端持续进化</span>：GitHub Actions 每天自动训练，您的每一次对局都在为 AI 提供学习数据。</li>
+                            <li><span className="text-green-400 font-bold">版本可视化</span>：右下角实时显示当前 AI 版本号与近期胜率，见证它的成长。</li>
+                        </ul>
+                    </article>
                 </main>
 
                 {/* RIGHT AD (PC Only) - High Revenue "Skyscraper" */}
@@ -72,21 +87,7 @@ export default function OnlineGameLayout() {
                 </div>
             </div>
 
-            {/* Content for SEO (Bottom) */}
-            <article className="max-w-3xl w-full p-8 text-gray-300 text-sm leading-relaxed z-10 bg-black/40 rounded-xl border border-gray-800 backdrop-blur-md mb-8">
-                <h2 className="text-lg font-semibold text-gray-100 mb-3 border-b border-gray-700 pb-2">关于四国军棋 AI (Deep Learning Edition)</h2>
-                <p className="mb-4">
-                    这是一个基于深度强化学习 (Deep Q-Network) 的四国军棋在线对战平台。我们的 AI 通过与自己的镜像在云端进行数万局的"左右互搏" (Self-Play)，
-                    自主学会了复杂的战术配合、工兵探路、三角雷阵等高级策略。通过独特的"竞技场"机制，只有显著强于旧版本的模型才会被自动部署到线上。
-                </p>
-                <h3 className="font-medium text-gray-200 mt-4 mb-2">游戏特色</h3>
-                <ul className="list-disc list-inside space-y-1 ml-2 text-gray-400">
-                    <li><span className="text-yellow-500 font-bold">深度神经网络</span>：利用卷积神经网络 (CNN) 分析棋盘大局，而非简单的规则搜索。</li>
-                    <li><span className="text-blue-400 font-bold">云端持续进化</span>：GitHub Actions 每天自动训练，您的每一次对局都在为 AI 提供学习数据。</li>
-                    <li><span className="text-green-400 font-bold">版本可视化</span>：右下角实时显示当前 AI 版本号与近期胜率，见证它的成长。</li>
-                </ul>
-            </article>
-
+            {/* Content for SEO (Bottom) - Moved to main container */}
             {/* Footer */}
             <footer className="w-full p-4 text-center text-gray-500 text-xs border-t border-gray-900/50 z-10 bg-black/60 backdrop-blur-sm">
                 &copy; {new Date().getFullYear()} Siguo Junqi AI. All Rights Reserved.
