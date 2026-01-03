@@ -6,7 +6,7 @@ import { DQNModel } from '../lib/ai/neuralNet';
 import { getNeuralAgent } from '../lib/ai/neuralAgent';
 
 // Polyfill for Node environment
-if (typeof window === 'undefined') {
+if (typeof (global as any).window === 'undefined') {
     (global as any).window = {};
     (global as any).localStorage = { getItem: () => null, setItem: () => { }, removeItem: () => { } };
 }
