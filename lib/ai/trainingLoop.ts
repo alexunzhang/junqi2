@@ -80,7 +80,17 @@ export class TrainingManager {
         };
     }
 
-    // ... (setProgressCallback)
+    public getNeuralAgentInstance(): NeuralAgent {
+        return this.neuralAgent;
+    }
+
+    public updateConfig(newConfig: Partial<TrainingConfig>) {
+        this.config = { ...this.config, ...newConfig };
+    }
+
+    public setProgressCallback(callback: (current: number, total: number, stats: TrainingStats) => void) {
+        this.onProgress = callback;
+    }
 
     public async runTraining(numGames?: number): Promise<TrainingStats> {
         const gamesToRun = numGames ?? this.config.numGames;
@@ -326,10 +336,16 @@ export class TrainingManager {
 }
 
 // ... (Singleton same)
+// Singleton
 let _trainingManager: TrainingManager | null = null;
-export function getTrainingManager(): TrainingManager {
+export function getTrainingManager(config?: Partial<TrainingConfig>, forceNew: boolean = false): TrainingManager {
+    if (forceNew) {
+        return new TrainingManager(config);
+    }
     if (!_trainingManager) {
-        _trainingManager = new TrainingManager();
+        _trainingManager = new TrainingManager(config);
+    } else if (config) {
+        _trainingManager.updateConfig(config);
     }
     return _trainingManager;
 }

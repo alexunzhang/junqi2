@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import Board from '../components/Board';
+import AIVersionDisplay from '../components/AIVersionDisplay';
 // import GoogleAdSense from '../components/GoogleAdSense'; // Reserved for when user has Client ID
 
 export default function OnlineGameLayout() {
@@ -90,6 +91,8 @@ export default function OnlineGameLayout() {
             <footer className="w-full p-4 text-center text-gray-500 text-xs border-t border-gray-900/50 z-10 bg-black/60 backdrop-blur-sm">
                 &copy; {new Date().getFullYear()} Siguo Junqi AI. All Rights Reserved.
             </footer>
+
+            <AIVersionDisplay />
         </div>
     );
 }

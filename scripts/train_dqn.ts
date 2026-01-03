@@ -46,7 +46,7 @@ async function main() {
 
     // The trainer uses the Singleton NeuralAgent. 
     // We will use this singleton as the "Candidate" that evolves.
-    const candidateAgent = trainer.neuralAgent;
+    const candidateAgent = trainer.getNeuralAgentInstance();
 
     // Try to load existing champion execution to continue training
     await candidateAgent.load(CHAMPION_PATH);
@@ -124,7 +124,17 @@ async function main() {
     if (candidateWinRate > 0.55 && stats.team0Wins > stats.team1Wins) {
         console.log(`\n🎉 New Champion! (Win Rate ${(candidateWinRate * 100).toFixed(1)}%)`);
         console.log("Promoting Candidate to Champion...");
+        console.log("Promoting Candidate to Champion...");
         await candidateModelToCheck.save(CHAMPION_PATH);
+
+        // Update Version File
+        const versionData = {
+            version: `v1.0.${Date.now()}`,
+            updated: new Date().toISOString(),
+            winRate: (candidateWinRate * 100).toFixed(1) + '%'
+        };
+        fs.writeFileSync(path.join(MODELS_DIR, 'version.json'), JSON.stringify(versionData, null, 2));
+        console.log("Updated Version:", versionData.version);
     } else {
         console.log(`\n❌ Candidate rejected. (Win Rate ${(candidateWinRate * 100).toFixed(1)}%)`);
     }
