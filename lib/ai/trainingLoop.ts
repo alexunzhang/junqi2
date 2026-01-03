@@ -92,6 +92,11 @@ export class TrainingManager {
         this.onProgress = callback;
     }
 
+    public stopTraining() {
+        this.abortTraining = true;
+        this.isTraining = false;
+    }
+
     public async runTraining(numGames?: number): Promise<TrainingStats> {
         const gamesToRun = numGames ?? this.config.numGames;
         this.isTraining = true;
