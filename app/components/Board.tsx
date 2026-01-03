@@ -617,15 +617,15 @@ const Board = ({ disableBackground = false }: BoardProps) => {
                         <div className="text-red-400 font-bold bg-black/50 px-4 py-1 rounded border border-red-500">{errorMsg}</div>
                     )}
 
-                    {/* Training Button - Visible during setup */}
-                    {gameStatus === 'setup' && (
+                    {/* Training Button Removed for Public Deployment */}
+                    {/* {gameStatus === 'setup' && (
                         <button
                             onClick={() => setShowTrainingPanel(true)}
                             className="px-4 py-1 bg-purple-700/80 hover:bg-purple-600 text-white text-sm font-bold rounded border border-purple-500 transition-all hover:scale-105"
                         >
                             🧠 AI训练
                         </button>
-                    )}
+                    )} */}
 
                     {/* Surrender Button - Only visible during gameplay */}
                     {gameStatus === 'playing' && currentPlayer === 0 && (
