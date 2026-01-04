@@ -147,6 +147,18 @@ async function main() {
     } else {
         console.log(`\n❌ Candidate rejected. (Win Rate ${(candidateWinRate * 100).toFixed(1)}%)`);
     }
+
+    // FINAL CHECK: Ensure version file exists (for Vercel display)
+    const versionPath = path.join(MODELS_DIR, 'version.json');
+    if (!fs.existsSync(versionPath)) {
+        console.log("⚠️ No version.json found. Creating initial version file...");
+        const initialVersion = {
+            version: `v1.0.${Date.now()}`,
+            updated: new Date().toISOString(),
+            winRate: '0% (Initializing)'
+        };
+        fs.writeFileSync(versionPath, JSON.stringify(initialVersion, null, 2));
+    }
 }
 
 if (require.main === module) {
