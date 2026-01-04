@@ -186,7 +186,7 @@ export class DQNModel {
     // Save/Load
     // Save/Load
     // Save/Load
-    public async save(path: string) {
+    public async save(path: string, options?: { fileSystem?: any, nativePath?: any }) {
         // Detect Node.js environment reliably (ignoring fake window polyfills)
         const isNode = typeof process !== 'undefined' && process.versions != null && process.versions.node != null;
 
@@ -198,9 +198,13 @@ export class DQNModel {
             } catch (e: any) {
                 // Determine if we need to use custom FS handler (if tfjs-node missing)
                 if (e.message && e.message.includes('save handlers')) {
+                    if (!options?.fileSystem || !options?.nativePath) {
+                        console.warn("Cannot fallback to custom FS saver: fs/path modules not provided.");
+                        throw e;
+                    }
                     console.warn("Retrying save to FS using custom handler...");
-                    const fs = require('fs');
-                    const nodePath = require('path');
+                    const fs = options.fileSystem;
+                    const nodePath = options.nativePath;
 
                     await this.model.save(tf.io.withSaveHandler(async (artifacts) => {
                         const dirPath = path;

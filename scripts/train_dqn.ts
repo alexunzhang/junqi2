@@ -59,7 +59,7 @@ async function main() {
     await trainer.runTraining(); // This trains candidateAgent via update() loops
 
     console.log("Training complete. Saving Candidate...");
-    await candidateAgent.save(CANDIDATE_PATH);
+    await candidateAgent.save(CANDIDATE_PATH, { fileSystem: fs, nativePath: path });
 
     // 4. Arena: Candidate vs Champion
     console.log("\n--- Phase 2: The Arena (Candidate vs Champion) ---");
@@ -75,25 +75,35 @@ async function main() {
             championExists = true;
         } else {
             console.log("No existing champion model found. First run?");
+            console.log("No Champion to fight. Candidate wins by default.");
+            await candidateAgent.save(CHAMPION_PATH, { fileSystem: fs, nativePath: path });
+
+            // Initialize Version File
+            const versionData = {
+                version: `v1.0.${Date.now()}`,
+                updated: new Date().toISOString(),
+                winRate: 'N/A (First Run)'
+            };
+            fs.writeFileSync(path.join(MODELS_DIR, 'version.json'), JSON.stringify(versionData, null, 2));
+            console.log("New Champion saved to:", CHAMPION_PATH);
+            console.log("Initialized Version:", versionData.version);
+            return; // Exit main function as candidate is now champion
         }
     } catch (e) {
         console.log("Error loading champion:", e);
-    }
-
-    if (!championExists) {
-        console.log("No Champion to fight. Candidate wins by default.");
-        await candidateAgent.save(CHAMPION_PATH);
+        console.log("No Champion to fight due to load error. Candidate wins by default.");
+        await candidateAgent.save(CHAMPION_PATH, { fileSystem: fs, nativePath: path });
 
         // Initialize Version File
         const versionData = {
             version: `v1.0.${Date.now()}`,
             updated: new Date().toISOString(),
-            winRate: 'N/A (First Run)'
+            winRate: 'N/A (First Run - Error)'
         };
         fs.writeFileSync(path.join(MODELS_DIR, 'version.json'), JSON.stringify(versionData, null, 2));
         console.log("New Champion saved to:", CHAMPION_PATH);
         console.log("Initialized Version:", versionData.version);
-        return;
+        return; // Exit main function as candidate is now champion
     }
 
     // Load Candidate Model into a fresh instance for the Arena logic verification
@@ -133,8 +143,7 @@ async function main() {
     if (candidateWinRate > 0.55 && stats.team0Wins > stats.team1Wins) {
         console.log(`\n🎉 New Champion! (Win Rate ${(candidateWinRate * 100).toFixed(1)}%)`);
         console.log("Promoting Candidate to Champion...");
-        console.log("Promoting Candidate to Champion...");
-        await candidateModelToCheck.save(CHAMPION_PATH);
+        await candidateModelToCheck.save(CHAMPION_PATH, { fileSystem: fs, nativePath: path });
 
         // Update Version File
         const versionData = {
