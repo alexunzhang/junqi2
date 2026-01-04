@@ -185,8 +185,12 @@ export class DQNModel {
 
     // Save/Load
     // Save/Load
+    // Save/Load
     public async save(path: string) {
-        if (typeof window === 'undefined') {
+        // Detect Node.js environment reliably (ignoring fake window polyfills)
+        const isNode = typeof process !== 'undefined' && process.versions != null && process.versions.node != null;
+
+        if (isNode) {
             // Node.js Environment (File System)
             // Path should be absolute or relative to cwd. 
             // tfjs-node saves as directory containing model.json + weights
@@ -198,8 +202,9 @@ export class DQNModel {
     }
 
     public async load(path: string) {
+        const isNode = typeof process !== 'undefined' && process.versions != null && process.versions.node != null;
         try {
-            if (typeof window === 'undefined') {
+            if (isNode) {
                 // Node.js: Load from filesystem
                 // path is directory. tfjs-node expects path/model.json
                 this.model = await tf.loadLayersModel(`file://${path}/model.json`);
