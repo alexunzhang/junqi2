@@ -192,9 +192,54 @@ export class DQNModel {
 
         if (isNode) {
             // Node.js Environment (File System)
-            // Path should be absolute or relative to cwd. 
-            // tfjs-node saves as directory containing model.json + weights
-            await this.model.save(`file://${path}`);
+            try {
+                // Try standard tfjs-node file:// scheme first
+                await this.model.save(`file://${path}`);
+            } catch (e: any) {
+                // Determine if we need to use custom FS handler (if tfjs-node missing)
+                if (e.message && e.message.includes('save handlers')) {
+                    console.warn("Retrying save to FS using custom handler...");
+                    const fs = require('fs');
+                    const nodePath = require('path');
+
+                    await this.model.save(tf.io.withSaveHandler(async (artifacts) => {
+                        const dirPath = path;
+                        if (!fs.existsSync(dirPath)) fs.mkdirSync(dirPath, { recursive: true });
+
+                        // 1. Save model.json
+                        const modelJson = {
+                            modelTopology: artifacts.modelTopology,
+                            format: artifacts.format,
+                            generatedBy: artifacts.generatedBy,
+                            convertedBy: artifacts.convertedBy,
+                            weightsManifest: [{
+                                paths: ['./weights.bin'],
+                                weights: artifacts.weightSpecs
+                            }]
+                        };
+                        fs.writeFileSync(nodePath.join(dirPath, 'model.json'), JSON.stringify(modelJson, null, 2));
+
+                        // 2. Save weights.bin
+                        if (artifacts.weightData) {
+                            // weightData can be ArrayBuffer or ArrayBuffer[]. Standard save produces one buffer.
+                            const weightBuffer = artifacts.weightData instanceof ArrayBuffer ? artifacts.weightData : (Array.isArray(artifacts.weightData) ? artifacts.weightData[0] : null);
+                            if (weightBuffer) {
+                                fs.writeFileSync(nodePath.join(dirPath, 'weights.bin'), Buffer.from(weightBuffer));
+                            }
+                        }
+
+                        return {
+                            modelArtifactsInfo: {
+                                dateSaved: new Date(),
+                                modelTopologyType: 'JSON',
+                                weightDataBytes: artifacts.weightData instanceof ArrayBuffer ? artifacts.weightData.byteLength : 0
+                            }
+                        };
+                    }));
+                } else {
+                    throw e;
+                }
+            }
         } else {
             // Browser Environment (LocalStorage)
             await this.model.save(`localstorage://${path}`);
