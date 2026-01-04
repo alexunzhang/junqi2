@@ -11,6 +11,10 @@ if (typeof (global as any).window === 'undefined') {
     (global as any).localStorage = { getItem: () => null, setItem: () => { }, removeItem: () => { } };
 }
 
+// Register FS modules globally for neuralNet fallback saving
+(globalThis as any).__junqi_fs = fs;
+(globalThis as any).__junqi_path = path;
+
 // Helper to ensure model dir exists
 function ensureDir(dir: string) {
     if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });

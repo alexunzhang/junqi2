@@ -198,13 +198,15 @@ export class DQNModel {
             } catch (e: any) {
                 // Determine if we need to use custom FS handler (if tfjs-node missing)
                 if (e.message && e.message.includes('save handlers')) {
-                    if (!options?.fileSystem || !options?.nativePath) {
-                        console.warn("Cannot fallback to custom FS saver: fs/path modules not provided.");
+                    // Fallback: Use options or global registry (set by train_dqn.ts in Node)
+                    const fs = options?.fileSystem || (globalThis as any).__junqi_fs;
+                    const nodePath = options?.nativePath || (globalThis as any).__junqi_path;
+
+                    if (!fs || !nodePath) {
+                        console.warn("Cannot fallback to custom FS saver: fs/path modules not provided and not in global registry.");
                         throw e;
                     }
                     console.warn("Retrying save to FS using custom handler...");
-                    const fs = options.fileSystem;
-                    const nodePath = options.nativePath;
 
                     await this.model.save(tf.io.withSaveHandler(async (artifacts) => {
                         const dirPath = path;
