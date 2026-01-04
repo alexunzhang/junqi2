@@ -83,7 +83,16 @@ async function main() {
     if (!championExists) {
         console.log("No Champion to fight. Candidate wins by default.");
         await candidateAgent.save(CHAMPION_PATH);
+
+        // Initialize Version File
+        const versionData = {
+            version: `v1.0.${Date.now()}`,
+            updated: new Date().toISOString(),
+            winRate: 'N/A (First Run)'
+        };
+        fs.writeFileSync(path.join(MODELS_DIR, 'version.json'), JSON.stringify(versionData, null, 2));
         console.log("New Champion saved to:", CHAMPION_PATH);
+        console.log("Initialized Version:", versionData.version);
         return;
     }
 
