@@ -420,7 +420,8 @@ export class QLearningAgent {
      * Save weights to localStorage
      */
     public saveToLocalStorage(): void {
-        if (typeof window === 'undefined') return;
+        const win = (typeof window !== 'undefined') ? window : (typeof global !== 'undefined' ? (global as any).window : null);
+        if (!win || !win.localStorage) return;
 
         try {
             const data = {
@@ -429,7 +430,7 @@ export class QLearningAgent {
                 totalReward: this.totalReward,
                 version: 1,
             };
-            localStorage.setItem('junqi_qlearning_weights', JSON.stringify(data));
+            win.localStorage.setItem('junqi_qlearning_weights', JSON.stringify(data));
         } catch (e) {
             console.warn('Failed to save Q-Learning weights:', e);
         }
@@ -439,10 +440,11 @@ export class QLearningAgent {
      * Load weights from localStorage
      */
     public loadFromLocalStorage(): void {
-        if (typeof window === 'undefined') return;
+        const win = (typeof window !== 'undefined') ? window : (typeof global !== 'undefined' ? (global as any).window : null);
+        if (!win || !win.localStorage) return;
 
         try {
-            const saved = localStorage.getItem('junqi_qlearning_weights');
+            const saved = win.localStorage.getItem('junqi_qlearning_weights');
             if (saved) {
                 const data = JSON.parse(saved);
                 if (data.version === 1 && data.weights) {
