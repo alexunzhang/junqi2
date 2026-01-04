@@ -300,29 +300,8 @@ export class TrainingManager {
 
             // NN Update
             if (this.config.useNeuralNetwork && this.config.trainOnGames) {
-                // Update previous experience
-                if (previousBoards.has(currentPlayer)) {
-                    // Reward is delayed? No, immediate reward + gamma * next_state_value
-                    // We store: (PrevState, Reward, CurrentState)
-                    // The 'previousBoard' is from LAST turn? 
-                    // No, for simple V(s) learning, we learn V(s) = r + gamma V(s').
-                    // But here we need to link State -> Move -> NextState.
-                    // This implementation simplifies:
-                    // It uses current move's transition.
-                    // But 'prevState' is needed.
-
-                    // Actually, let's just use CURRENT transition.
-                    // State = currentBoardSnapshot
-                    // NextState = board (after move)
-                    // Reward = reward.
-
-                    // If we want to capture opponent moves:
-                    // Learning V(s) usually implies value of state at START of turn.
-                    // So we must wait until NEXT turn to see outcome of opponents?
-                    // For now, simplify: Learn from immediate transition.
-
-                    await this.neuralAgent.update(currentBoardSnapshot, reward, board, gameOver.isOver, currentPlayer);
-                }
+                // Update neural network memory (State -> Reward -> NextState)
+                await this.neuralAgent.update(currentBoardSnapshot, reward, board, gameOver.isOver, currentPlayer);
             }
 
             totalReward += reward;
