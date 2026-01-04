@@ -36,7 +36,7 @@ jobs:
         # Increase memory limit just in case
         run: |
           export NODE_OPTIONS="--max-old-space-size=4096"
-          npx ts-node --skip-project --compiler-options '{"module":"commonjs"}' scripts/train_dqn.ts
+          npx ts-node --compiler-options '{"module":"commonjs"}' scripts/train_dqn.ts
 
       - name: Commit and Push if Champion Updated
         run: |
