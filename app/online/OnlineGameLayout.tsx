@@ -30,25 +30,13 @@ export default function OnlineGameLayout() {
                 className={`absolute inset-0 bg-black/60 z-0 pointer-events-none transition-opacity duration-1000 ease-in-out ${intro ? 'opacity-0' : 'opacity-100'}`}
             />
 
-            {/* Top Ad Banner (Placeholder) */}
-            <div className="w-full max-w-4xl bg-gray-900/50 mt-[40px] z-10 rounded-lg overflow-hidden border border-gray-700/50">
-                {/* Uncomment below when you have AdSense Client ID */}
-                {/* <GoogleAdSense client="ca-pub-YOUR_ID_HERE" slot="TOP_SLOT_ID" format="auto" /> */}
-                <div className="h-[90px] w-full border-2 border-dashed border-gray-700/50 flex flex-col items-center justify-center text-gray-400 text-xs text-center backdrop-blur-md">
-                    <span className="font-bold text-gray-300 mb-1">广告位 (Top Banner)</span>
-                    <span>支持开发者运营服务器</span>
-                </div>
-            </div>
+            {/* Top Ad Banner Removed for Cleaner UI */}
+            <div className="w-full h-8" />
 
             {/* Main Layout Container - Responsive Grid */}
             <div className="flex-1 w-full max-w-[1920px] mx-auto flex flex-col lg:flex-row items-start justify-center gap-4 p-2 relative z-10">
 
-                {/* LEFT AD (PC Only) - High Revenue "Skyscraper" */}
-                <aside className="hidden lg:flex w-[160px] flex-col gap-4 mt-8 sticky top-4">
-                    <div className="w-[160px] h-[600px] border-2 border-dashed border-gray-700/50 flex items-center justify-center text-gray-500 text-xs text-center bg-black/20 backdrop-blur-sm rounded-lg">
-                        <p>摩天大楼广告<br />(160x600)<br /><span className="text-green-400">PC端高收益</span></p>
-                    </div>
-                </aside>
+                {/* LEFT AD Removed */}
 
                 {/* GAME AREA - Center Stage */}
                 <main className="flex-1 w-full flex flex-col items-center min-w-0 gap-8">
@@ -72,20 +60,10 @@ export default function OnlineGameLayout() {
                     </article>
                 </main>
 
-                {/* RIGHT AD (PC Only) - High Revenue "Skyscraper" */}
-                <aside className="hidden lg:flex w-[160px] flex-col gap-4 mt-8 sticky top-4">
-                    <div className="w-[160px] h-[600px] border-2 border-dashed border-gray-700/50 flex items-center justify-center text-gray-500 text-xs text-center bg-black/20 backdrop-blur-sm rounded-lg">
-                        <p>摩天大楼广告<br />(160x600)<br /><span className="text-green-400">PC端高收益</span></p>
-                    </div>
-                </aside>
+                {/* RIGHT AD Removed */}
             </div>
 
-            {/* MOBILE STICKY AD (Bottom) - Max Revenue for Phone Users */}
-            <div className="lg:hidden fixed bottom-0 left-0 right-0 z-50 bg-gray-900/90 border-t border-gray-800 p-1 flex justify-center backdrop-blur-md">
-                <div className="w-[320px] h-[50px] border border-dashed border-gray-600 flex items-center justify-center text-gray-400 text-xs">
-                    移动端底部悬浮 (320x50) - <span className="text-green-400 ml-1">点击率最高</span>
-                </div>
-            </div>
+            {/* MOBILE STICKY AD Removed */}
 
             {/* Content for SEO (Bottom) - Moved to main container */}
             {/* Footer */}

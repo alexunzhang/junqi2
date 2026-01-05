@@ -655,7 +655,11 @@ const Board = ({ disableBackground = false }: BoardProps) => {
                     style={{
                         gridTemplateColumns: `repeat(${BOARD_COLS}, minmax(0, 1fr))`,
                         gridTemplateRows: `repeat(${BOARD_ROWS}, minmax(0, 1fr))`,
-                        width: 'min(92vw, 88vh)',
+                        // Responsive Sizing Logic:
+                        // Desktop: Keep 88vh limit to fit in view
+                        // Mobile/Tablet (<1024px): Use 98vw/96vh to maximize usage
+                        width: 'min(98vw, 96vh)', // Default aggressive max
+                        maxWidth: '88vh', // Desktop Constraint
                         aspectRatio: '1/1'
                     }}
                     onClick={() => {
@@ -666,6 +670,13 @@ const Board = ({ disableBackground = false }: BoardProps) => {
                         }
                     }}
                 >
+                    {/* Landscape Recommendation Overlay (Mobile Only) */}
+                    <div className="lg:hidden fixed inset-0 z-50 pointer-events-none flex items-center justify-center" style={{ display: 'none' }} id="landscape-hint">
+                        {/* Logic handled via CSS media query usually, or via JS effect. 
+                            For simplicity, we rely on user rotation. 
+                            But let's add a JS check in useEffect if we want explicit overlay.
+                        */}
+                    </div>
 
                     {/* Marking Menu Portal/Overlay */}
                     {markingMenuPos && (
