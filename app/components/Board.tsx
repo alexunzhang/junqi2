@@ -51,12 +51,16 @@ const Board = ({ disableBackground = false }: BoardProps) => {
     // Training Panel State
     const [showTrainingPanel, setShowTrainingPanel] = useState(false);
 
+    // Track if this is the first load (for skipping intro animation on restart)
+    const isFirstLoad = useRef(true);
+
     // Initial Deep Clone Helper
     const deepCloneBoard = (b: (BoardNode | null)[][]) => b.map(row => row.map(cell => cell ? { ...cell, piece: cell.piece ? { ...cell.piece } : null } : null));
 
     // Initialize game
     useEffect(() => {
         startNewGame();
+        isFirstLoad.current = false; // Mark first load complete
     }, []);
 
     const startNewGame = () => {
@@ -86,6 +90,11 @@ const Board = ({ disableBackground = false }: BoardProps) => {
         // Reset AI Memory on new game
         aiMemory.current.reset([]);
         aiMemory.current.sync(newBoard as BoardNode[][]);
+
+        // Skip intro animation on restart (not first load)
+        if (!isFirstLoad.current) {
+            setIntro(false);
+        }
     };
 
     // AI Turn Logic
