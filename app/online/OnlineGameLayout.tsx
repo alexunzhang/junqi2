@@ -30,16 +30,16 @@ export default function OnlineGameLayout() {
                 className={`absolute inset-0 bg-black/60 z-0 pointer-events-none transition-opacity duration-1000 ease-in-out ${intro ? 'opacity-0' : 'opacity-100'}`}
             />
 
-            {/* Minimal Top Spacer */}
-            <div className="w-full h-2 md:h-4" />
+            {/* Top Spacer - Hidden on Mobile Landscape */}
+            <div className="hidden md:block w-full h-4" />
 
             {/* Main Layout Container - Responsive Grid */}
-            <div className="flex-1 w-full max-w-[1920px] mx-auto flex flex-col lg:flex-row items-start justify-center gap-4 p-2 relative z-10">
+            <div className="flex-1 w-full max-w-[1920px] mx-auto flex flex-col lg:flex-row items-start justify-center gap-0 md:gap-4 p-0 md:p-2 relative z-10">
 
                 {/* LEFT AD Removed */}
 
                 {/* GAME AREA - Center Stage */}
-                <main className="flex-1 w-full flex flex-col items-center min-w-0 gap-8">
+                <main className="flex-1 w-full flex flex-col items-center min-w-0 gap-0 md:gap-8">
                     <div className="w-full origin-top flex justify-center">
                         <Board disableBackground={true} />
                     </div>
@@ -67,7 +67,8 @@ export default function OnlineGameLayout() {
 
             {/* Content for SEO (Bottom) - Moved to main container */}
             {/* Footer */}
-            <footer className="w-full p-4 text-center text-gray-500 text-xs border-t border-gray-900/50 z-10 bg-black/60 backdrop-blur-sm">
+            {/* Footer - Hidden on Mobile */}
+            <footer className="hidden md:block w-full p-4 text-center text-gray-500 text-xs border-t border-gray-900/50 z-10 bg-black/60 backdrop-blur-sm">
                 &copy; {new Date().getFullYear()} Siguo Junqi AI. All Rights Reserved.
             </footer>
 
