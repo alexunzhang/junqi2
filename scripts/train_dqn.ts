@@ -118,13 +118,14 @@ async function main() {
     candidateAgent.setArenaMode(candidateModelToCheck, championModel);
 
     // Run Evaluation Games (No Training)
+    // IMPORTANT: forceNew=true to get fresh stats (not carry over from Training Phase)
     const arenaTrainer = getTrainingManager({
         numGames: 50, // 50 games for verification
         useNeuralNetwork: true,
         autoLoadModel: false,
         trainOnGames: false, // Important: No learning during Exam
         epsilon: 0.05 // Low exploration
-    });
+    }, true); // forceNew = true
 
     // Run Duel
     // We intercept progress to enable logging
