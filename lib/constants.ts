@@ -38,6 +38,25 @@ export const getPieceName = (type: PieceType): string => {
     }
 };
 
+// Short name for mobile (1 character)
+export const getShortPieceName = (type: PieceType): string => {
+    switch (type) {
+        case PieceType.Commander: return '司';
+        case PieceType.Corps: return '军';
+        case PieceType.Division: return '师';
+        case PieceType.Brigade: return '旅';
+        case PieceType.Regiment: return '团';
+        case PieceType.Battalion: return '营';
+        case PieceType.Company: return '连';
+        case PieceType.Platoon: return '排';
+        case PieceType.Engineer: return '工';
+        case PieceType.Bomb: return '炸';
+        case PieceType.Mine: return '雷';
+        case PieceType.Flag: return '旗';
+        default: return '';
+    }
+};
+
 // Piece Front Styles (Text & Border) - Brighter for contrast
 export const getPieceColor = (playerId: number): string => {
     switch (playerId) {

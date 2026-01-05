@@ -1,6 +1,6 @@
 import React from 'react';
 import { Piece as PieceModel } from '@/lib/types';
-import { getPieceName, getPieceColor, getPieceBgColor, getPieceBackStyle, getRotation } from '@/lib/constants';
+import { getPieceName, getShortPieceName, getPieceColor, getPieceBgColor, getPieceBackStyle, getRotation } from '@/lib/constants';
 
 interface PieceProps {
     piece: PieceModel;
@@ -43,7 +43,13 @@ const Piece: React.FC<PieceProps> = ({ piece, isSelected, onClick, forceReveal, 
         relative
       `}
         >
-            {showContent ? getPieceName(piece.type) : ''}
+            {/* Responsive piece name: 1 char on mobile, 2 chars on md+ */}
+            {showContent && (
+                <>
+                    <span className="md:hidden">{getShortPieceName(piece.type)}</span>
+                    <span className="hidden md:inline">{getPieceName(piece.type)}</span>
+                </>
+            )}
 
             {/* User Mark Overlay - Counter Rotated to be upright for User */}
             {mark && (
