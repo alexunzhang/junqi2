@@ -272,6 +272,13 @@ export class DQNModel {
                     console.log("Model loaded from LocalStorage:", path);
                 }
             }
+
+            // Re-compile model to ensure optimizer/loss are set (critical for resuming training)
+            this.model.compile({
+                optimizer: tf.train.adam(LEARNING_RATE),
+                loss: 'meanSquaredError'
+            });
+
         } catch (e) {
             console.warn("No saved model found at", path, ". Using initialized random model.");
             // Keep the random model created in constructor
