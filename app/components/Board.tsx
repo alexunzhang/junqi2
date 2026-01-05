@@ -655,11 +655,9 @@ const Board = ({ disableBackground = false }: BoardProps) => {
                     style={{
                         gridTemplateColumns: `repeat(${BOARD_COLS}, minmax(0, 1fr))`,
                         gridTemplateRows: `repeat(${BOARD_ROWS}, minmax(0, 1fr))`,
-                        // Responsive Sizing Logic:
-                        // Desktop: Keep 88vh limit to fit in view
-                        // Mobile/Tablet (<1024px): Use 98vw/96vh to maximize usage
-                        width: 'min(98vw, 96vh)', // Default aggressive max
-                        maxWidth: '88vh', // Desktop Constraint
+                        // AGGRESSIVE Responsive Sizing:
+                        // Use 99% of the smaller dimension to maximize board size on ALL devices
+                        width: 'min(99vw, 99vh)',
                         aspectRatio: '1/1'
                     }}
                     onClick={() => {

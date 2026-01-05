@@ -30,8 +30,8 @@ export default function OnlineGameLayout() {
                 className={`absolute inset-0 bg-black/60 z-0 pointer-events-none transition-opacity duration-1000 ease-in-out ${intro ? 'opacity-0' : 'opacity-100'}`}
             />
 
-            {/* Top Ad Banner Removed for Cleaner UI */}
-            <div className="w-full h-8" />
+            {/* Minimal Top Spacer */}
+            <div className="w-full h-2 md:h-4" />
 
             {/* Main Layout Container - Responsive Grid */}
             <div className="flex-1 w-full max-w-[1920px] mx-auto flex flex-col lg:flex-row items-start justify-center gap-4 p-2 relative z-10">
@@ -44,8 +44,8 @@ export default function OnlineGameLayout() {
                         <Board disableBackground={true} />
                     </div>
 
-                    {/* Game Description - Moved Here for Visibility */}
-                    <article className="max-w-3xl w-full p-8 text-gray-300 text-sm leading-relaxed z-10 bg-gray-900 rounded-xl border border-gray-700 shadow-2xl">
+                    {/* Game Description - Hidden on Mobile for Maximum Board Space */}
+                    <article className="hidden md:block max-w-3xl w-full p-8 text-gray-300 text-sm leading-relaxed z-10 bg-gray-900 rounded-xl border border-gray-700 shadow-2xl">
                         <h2 className="text-lg font-semibold text-white mb-3 border-b border-gray-600 pb-2">关于四国军棋 AI (Deep Learning Edition)</h2>
                         <p className="mb-4">
                             这是一个基于深度强化学习 (Deep Q-Network) 的四国军棋在线对战平台。我们的 AI 通过与自己的镜像在云端进行数万局的"左右互搏" (Self-Play)，
