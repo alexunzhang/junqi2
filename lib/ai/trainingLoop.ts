@@ -232,26 +232,36 @@ export class TrainingManager {
             const persona = currentPlayer % 2 === 0 ? 'TEAMMATE_SUPPORT' : 'AGGRESSIVE';
 
             for (const move of possibleMoves) {
-                // Evaluator Score (Rules)
-                const evalResult = await evaluator.getBestMove(
-                    board as (BoardNode | null)[][],
-                    [move],
-                    memory,
-                    currentPlayer,
-                    persona as any,
-                    history
-                );
-                let score = evalResult.score;
+                let score = 0;
 
-                // Neural Network Bonus
-                if (this.config.useNeuralNetwork) {
-                    const nnBonus = await this.neuralAgent.getMoveBonus(board, move.from, move.to, currentPlayer);
-                    score += nnBonus;
-                }
-                // Q-Learning Bonus (Legacy)
-                else if (this.config.useQLearning) {
-                    const qBonus = this.qAgent.getMoveBonus(board, move.from, move.to, currentPlayer);
-                    score += qBonus;
+                // Arena Mode (trainOnGames=false): Use ONLY NN for pure comparison
+                // Training Mode: Blend Rule Engine + NN for guided learning
+                if (this.config.useNeuralNetwork && !this.config.trainOnGames) {
+                    // ARENA: Pure Neural Network Decision
+                    const nnScore = await this.neuralAgent.getMoveBonus(board, move.from, move.to, currentPlayer);
+                    score = nnScore; // NN is the ONLY factor
+                } else {
+                    // TRAINING: Rule Engine + NN Bonus (Guided Learning)
+                    const evalResult = await evaluator.getBestMove(
+                        board as (BoardNode | null)[][],
+                        [move],
+                        memory,
+                        currentPlayer,
+                        persona as any,
+                        history
+                    );
+                    score = evalResult.score;
+
+                    // Neural Network Bonus (additive, for exploration)
+                    if (this.config.useNeuralNetwork) {
+                        const nnBonus = await this.neuralAgent.getMoveBonus(board, move.from, move.to, currentPlayer);
+                        score += nnBonus;
+                    }
+                    // Q-Learning Bonus (Legacy)
+                    else if (this.config.useQLearning) {
+                        const qBonus = this.qAgent.getMoveBonus(board, move.from, move.to, currentPlayer);
+                        score += qBonus;
+                    }
                 }
 
                 // Exploration
