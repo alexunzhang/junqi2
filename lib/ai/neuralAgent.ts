@@ -58,11 +58,11 @@ export class NeuralAgent {
         // 2. Predict Value
         const value = await this.getModelForPlayer(playerId).predict(nextBoard, playerId);
 
-        // 3. Scale to Rule Engine magnitude (e.g. 1.0 -> 100,000)
+        // 3. Scale to Rule Engine magnitude
         // DQN outputs ~ -100 to 100 (Reward cumulative)
         // Rule engine uses ~1000 for small things, 1M for big.
-        // Let's multiply by 1000 as a start.
-        return value * 1000;
+        // Multiplier: 5000 gives NN significant influence on decisions.
+        return value * 5000;
     }
 
     /**

@@ -58,7 +58,7 @@ async function main() {
     // 3. Train Candidate (Self-Play)
     console.log("\n--- Phase 1: Training Candidate (Self-Play) ---");
     // In production, set this to 500-1000
-    trainer.updateConfig({ numGames: 200 });
+    trainer.updateConfig({ numGames: 350 });
 
     await trainer.runTraining(); // This trains candidateAgent via update() loops
 
