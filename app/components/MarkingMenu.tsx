@@ -28,18 +28,40 @@ const MARKS = [
 ];
 
 const MarkingMenu: React.FC<MarkingMenuProps> = ({ onSelect, onClose, position }) => {
-    // Smart Positioning Logic
-    // If click is on right side, show menu to left.
-    // If click is on bottom side, show menu above.
+    // Smart Positioning Logic - Ensure menu stays within viewport
     const menuWidth = 220;
-    const menuHeight = 280; // Approx
-    const offset = 10;
+    const menuHeight = 350; // Increased estimate for safety
+    const padding = 10;
 
-    const isRight = position.x > window.innerWidth / 2;
-    const isBottom = position.y > window.innerHeight / 2;
+    // Calculate available space in each direction
+    const spaceRight = window.innerWidth - position.x;
+    const spaceLeft = position.x;
+    const spaceBottom = window.innerHeight - position.y;
+    const spaceTop = position.y;
 
-    const left = isRight ? Math.max(10, position.x - menuWidth - offset) : Math.min(window.innerWidth - menuWidth - 10, position.x + offset);
-    const top = isBottom ? Math.max(10, position.y - menuHeight - offset) : Math.min(window.innerHeight - menuHeight - 10, position.y + offset);
+    // Always clamp to ensure menu fits within viewport
+    let left: number;
+    let top: number;
+
+    // Horizontal positioning: prefer right, but use left if not enough space
+    if (spaceRight >= menuWidth + padding) {
+        left = position.x + padding;
+    } else if (spaceLeft >= menuWidth + padding) {
+        left = position.x - menuWidth - padding;
+    } else {
+        // Not enough space on either side - center and clamp
+        left = Math.max(padding, Math.min(window.innerWidth - menuWidth - padding, position.x - menuWidth / 2));
+    }
+
+    // Vertical positioning: prefer below, but use above if not enough space
+    if (spaceBottom >= menuHeight + padding) {
+        top = position.y + padding;
+    } else if (spaceTop >= menuHeight + padding) {
+        top = position.y - menuHeight - padding;
+    } else {
+        // Not enough space - clamp to viewport
+        top = Math.max(padding, Math.min(window.innerHeight - menuHeight - padding, position.y - menuHeight / 2));
+    }
 
     return (
         <div
@@ -47,12 +69,13 @@ const MarkingMenu: React.FC<MarkingMenuProps> = ({ onSelect, onClose, position }
             onClick={onClose}
         >
             <div
-                className="bg-gray-900 border border-yellow-500 rounded-lg p-3 grid grid-cols-3 gap-2 shadow-2xl animate-in fade-in zoom-in-95 duration-100 ring-2 ring-white/10"
+                className="bg-gray-900 border border-yellow-500 rounded-lg p-3 grid grid-cols-3 gap-2 shadow-2xl animate-in fade-in zoom-in-95 duration-100 ring-2 ring-white/10 max-h-[90vh] overflow-auto"
                 style={{
-                    position: 'absolute',
-                    left,
-                    top,
-                    width: `${menuWidth}px`
+                    position: 'fixed',
+                    left: `${left}px`,
+                    top: `${top}px`,
+                    width: `${menuWidth}px`,
+                    maxWidth: 'calc(100vw - 20px)'
                 }}
                 onClick={(e) => e.stopPropagation()}
             >
