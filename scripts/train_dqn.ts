@@ -59,7 +59,7 @@ async function main() {
     // Arena is now fair (verified with 48.9% baseline). 
     // Training should improve win rate if NN is learning effectively.
     console.log("\n--- Phase 1: Training Candidate (Self-Play) ---");
-    trainer.updateConfig({ numGames: 350 });
+    trainer.updateConfig({ numGames: 700 }); // Increased for more learning
 
     await trainer.runTraining(); // This trains candidateAgent via update() loops
 
