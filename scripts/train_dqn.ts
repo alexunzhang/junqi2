@@ -56,10 +56,10 @@ async function main() {
     await candidateAgent.load(CHAMPION_PATH);
 
     // 3. Train Candidate (Self-Play)
-    // DIAGNOSTIC TEST #2: Verify alternateStartPlayer fix with identical models
-    // Expected result: ~50% for Candidate (proving turn order fix works)
-    console.log("\n--- Phase 1: Training Candidate (SKIPPED - Diagnostic Test) ---");
-    trainer.updateConfig({ numGames: 0 }); // Skip training entirely
+    // Arena is now fair (verified with 48.9% baseline). 
+    // Training should improve win rate if NN is learning effectively.
+    console.log("\n--- Phase 1: Training Candidate (Self-Play) ---");
+    trainer.updateConfig({ numGames: 350 });
 
     await trainer.runTraining(); // This trains candidateAgent via update() loops
 
