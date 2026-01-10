@@ -2,10 +2,9 @@
 name: Train AI (Daily)
 
 on:
-  # PAUSED: Scheduled runs disabled until Candidate Win Rate issue is fixed
-  # schedule:
-  #   - cron: '0 0 * * *' # Every midnight UTC
-  workflow_dispatch: # Manual trigger only
+  schedule:
+    - cron: '0 0 * * *' # Every midnight UTC
+  workflow_dispatch: # Manual trigger
 
 permissions:
   contents: write
