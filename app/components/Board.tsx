@@ -590,6 +590,22 @@ const Board = ({ disableBackground = false }: BoardProps) => {
             className={`flex flex-col items-center justify-center p-4 overflow-hidden ${disableBackground ? '' : 'min-h-screen bg-cover bg-center bg-no-repeat bg-fixed'}`}
             style={disableBackground ? {} : { backgroundImage: "url('/bg.jpg')" }}
         >
+            {/* Marking Menu - Rendered at top level to avoid CSS transform interference */}
+            {markingMenuPos && (
+                <MarkingMenu
+                    position={markingMenuPos}
+                    onSelect={(label) => {
+                        if (markingTargetId) {
+                            handleMarkPiece(markingTargetId, label);
+                        }
+                    }}
+                    onClose={() => {
+                        setMarkingMenuPos(null);
+                        setMarkingTargetId(null);
+                    }}
+                />
+            )}
+
             {/* Dark Overlay - Fades in AFTER intro to let background shine first */}
             {!disableBackground && (
                 <div
@@ -684,22 +700,6 @@ const Board = ({ disableBackground = false }: BoardProps) => {
                             But let's add a JS check in useEffect if we want explicit overlay.
                         */}
                     </div>
-
-                    {/* Marking Menu Portal/Overlay */}
-                    {markingMenuPos && (
-                        <MarkingMenu
-                            position={markingMenuPos}
-                            onSelect={(label) => {
-                                if (markingTargetId) {
-                                    handleMarkPiece(markingTargetId, label);
-                                }
-                            }}
-                            onClose={() => {
-                                setMarkingMenuPos(null);
-                                setMarkingTargetId(null);
-                            }}
-                        />
-                    )}
 
                     {/* Trajectory Overlay - Support Replay Visualization */}
                     {(() => {
