@@ -24,17 +24,15 @@ const Piece: React.FC<PieceProps> = ({ piece, isSelected, onClick, forceReveal, 
         }
     };
 
-    // Piece sizing based on player position:
-    // Top/Bottom (0, 2) = Flat/Wide (short vertically, long horizontally)
-    // Left/Right (1, 3) = Tall/Narrow (tall vertically, short horizontally)
+    // Piece sizing based on player position and rotation compensation:
+    // After CSS rotation, visual width/height swap for 90° rotations
+    // So we need to give opposite dimensions to get desired visual result:
+    // - Top/Bottom (0, 2): rotate 0°/180°, flat code → flat visual
+    // - Left/Right (1, 3): rotate 90°/-90°, flat code → TALL visual (rotation swaps)
     const getPieceSizing = (pid: number) => {
-        if (pid === 0 || pid === 2) {
-            // Top/Bottom: Flat pieces (wide, short)
-            return 'w-10 h-5 md:w-14 md:h-7 lg:w-16 lg:h-8';
-        } else {
-            // Left/Right: Tall pieces (narrow, tall)
-            return 'w-5 h-10 md:w-7 md:h-14 lg:w-8 lg:h-16';
-        }
+        // All players get FLAT dimensions in code
+        // After rotation: 0,2 stay flat; 1,3 become tall visually
+        return 'w-10 h-5 md:w-14 md:h-7 lg:w-16 lg:h-8';
     };
 
     return (
