@@ -23,17 +23,30 @@ export class NeuralAgent {
     public clearArenaMode() {
         this.candidateModel = null;
         this.championModel = null;
+        this.swapTeams = false;
+    }
+
+    // Swap which team uses which model for fair Arena comparison
+    public swapTeams: boolean = false;
+    public setSwapTeams(swap: boolean) {
+        this.swapTeams = swap;
     }
 
     private getModelForPlayer(pid: number): DQNModel {
         if (this.candidateModel && this.championModel) {
-            const isCandidate = (pid % 2 === 0);
+            // Normally: Team 0 (pid 0,2) uses Candidate, Team 1 (pid 1,3) uses Champion
+            // When swapTeams=true: Team 0 uses Champion, Team 1 uses Candidate
+            const isTeam0 = (pid % 2 === 0);
+            const usesCandidateModel = this.swapTeams ? !isTeam0 : isTeam0;
+
             // DEBUG: Log first call per game to verify Arena mode is active
             if (pid === 0 && !this._debugLogged) {
-                console.log(`[Arena Debug] Arena Mode ACTIVE. P0 uses Candidate, P1 uses Champion.`);
+                const team0Model = this.swapTeams ? 'Champion' : 'Candidate';
+                const team1Model = this.swapTeams ? 'Candidate' : 'Champion';
+                console.log(`[Arena Debug] Arena Mode ACTIVE. Team0=${team0Model}, Team1=${team1Model}`);
                 this._debugLogged = true;
             }
-            return isCandidate ? this.candidateModel : this.championModel;
+            return usesCandidateModel ? this.candidateModel : this.championModel;
         }
         // DEBUG: Log if Arena mode is NOT active
         if (pid === 0 && !this._debugLoggedFallback) {

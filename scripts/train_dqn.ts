@@ -126,7 +126,8 @@ async function main() {
         autoLoadModel: false,
         trainOnGames: false, // Important: No learning during Exam
         epsilon: 0.05, // Low exploration
-        alternateStartPlayer: true // CRITICAL: Alternate who moves first for fair comparison
+        alternateStartPlayer: true, // Alternate who moves first
+        swapTeamsInArena: true // CRITICAL: Swap which team uses Candidate every other game
     }, true); // forceNew = true
 
     // Run Duel

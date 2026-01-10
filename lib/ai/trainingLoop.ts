@@ -45,7 +45,8 @@ export interface TrainingConfig {
     trainOnGames: boolean;
     epsilon: number;
     maxTurnsPerGame: number;
-    alternateStartPlayer?: boolean; // NEW: Alternate which team moves first
+    alternateStartPlayer?: boolean; // Alternate which team moves first
+    swapTeamsInArena?: boolean; // Swap which team uses Candidate vs Champion every other game
 }
 
 const DEFAULT_CONFIG: TrainingConfig = {
@@ -57,6 +58,7 @@ const DEFAULT_CONFIG: TrainingConfig = {
     epsilon: 0.2,
     maxTurnsPerGame: 500,
     alternateStartPlayer: false, // Default off for training, on for Arena
+    swapTeamsInArena: false, // Default off for training, on for Arena
 };
 
 export class TrainingManager {
@@ -184,6 +186,13 @@ export class TrainingManager {
         // If gameIndex is odd and alternateStartPlayer is true, start with Team 1
         const startPlayer = (this.config.alternateStartPlayer && this.stats.gamesPlayed % 2 === 1) ? 1 : 0;
         let currentPlayer: PlayerId = startPlayer as PlayerId;
+
+        // Swap which team uses Candidate vs Champion every other game (for fair Arena)
+        if (this.config.swapTeamsInArena) {
+            const shouldSwap = this.stats.gamesPlayed % 2 === 1;
+            this.neuralAgent.setSwapTeams(shouldSwap);
+        }
+
         let turns = 0;
         let totalReward = 0;
 
