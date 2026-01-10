@@ -27,10 +27,23 @@ export class NeuralAgent {
 
     private getModelForPlayer(pid: number): DQNModel {
         if (this.candidateModel && this.championModel) {
-            return (pid % 2 === 0) ? this.candidateModel : this.championModel;
+            const isCandidate = (pid % 2 === 0);
+            // DEBUG: Log first call per game to verify Arena mode is active
+            if (pid === 0 && !this._debugLogged) {
+                console.log(`[Arena Debug] Arena Mode ACTIVE. P0 uses Candidate, P1 uses Champion.`);
+                this._debugLogged = true;
+            }
+            return isCandidate ? this.candidateModel : this.championModel;
+        }
+        // DEBUG: Log if Arena mode is NOT active
+        if (pid === 0 && !this._debugLoggedFallback) {
+            console.log(`[Arena Debug] Arena Mode INACTIVE! All players use default model.`);
+            this._debugLoggedFallback = true;
         }
         return this.model;
     }
+    private _debugLogged = false;
+    private _debugLoggedFallback = false;
 
     /**
      * Get value prediction for a state
