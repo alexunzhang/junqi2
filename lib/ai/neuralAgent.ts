@@ -15,6 +15,11 @@ export class NeuralAgent {
         this.model = new DQNModel();
     }
 
+    // Public getter to access the internal model (for training setup)
+    public getModel(): DQNModel {
+        return this.model;
+    }
+
     public setArenaMode(candidate: DQNModel, champion: DQNModel) {
         this.candidateModel = candidate;
         this.championModel = champion;

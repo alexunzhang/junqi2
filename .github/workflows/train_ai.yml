@@ -2,9 +2,10 @@
 name: Train AI (Daily)
 
 on:
-  schedule:
-    - cron: '0 0 * * *' # Every midnight UTC
-  workflow_dispatch: # Manual trigger
+  # PAUSED: Testing new "Train vs Champion" mode
+  # schedule:
+  #   - cron: '0 0 * * *' # Every midnight UTC
+  workflow_dispatch: # Manual trigger only
 
 permissions:
   contents: write

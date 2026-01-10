@@ -52,16 +52,36 @@ async function main() {
     // We will use this singleton as the "Candidate" that evolves.
     const candidateAgent = trainer.getNeuralAgentInstance();
 
-    // Try to load existing champion execution to continue training
+    // Try to load existing champion to start from (Candidate begins as a clone of Champion)
     await candidateAgent.load(CHAMPION_PATH);
 
-    // 3. Train Candidate (Self-Play)
-    // Arena is now fair (verified with 48.9% baseline). 
-    // Training should improve win rate if NN is learning effectively.
-    console.log("\n--- Phase 1: Training Candidate (Self-Play) ---");
-    trainer.updateConfig({ numGames: 700 }); // Increased for more learning
+    // Load Champion Model for "Train vs Champion" mode
+    console.log("Loading Champion as training opponent...");
+    const championForTraining = new DQNModel();
+    try {
+        if (fs.existsSync(path.join(CHAMPION_PATH, 'model.json'))) {
+            await championForTraining.load(CHAMPION_PATH);
+            console.log("Champion loaded as training opponent.");
+        }
+    } catch (e) {
+        console.log("No Champion found - will use self-play for first run.");
+    }
+
+    // 3. Train Candidate vs Champion (NOT self-play!)
+    // Team 0 (Candidate) learns by playing against Team 1 (Champion)
+    console.log("\n--- Phase 1: Training Candidate (vs Champion) ---");
+
+    // Set up training mode: Candidate (Team 0) vs Champion (Team 1)
+    // The Candidate model is candidateAgent.getModel() (the main model)
+    // We use candidateAgent.getModel() as "candidate" and championForTraining as "champion"
+    candidateAgent.setArenaMode(candidateAgent.getModel(), championForTraining);
+
+    trainer.updateConfig({ numGames: 500 }); // 500 games against Champion
 
     await trainer.runTraining(); // This trains candidateAgent via update() loops
+
+    // Clear arena mode after training (the main model has been trained)
+    candidateAgent.clearArenaMode();
 
     console.log("Training complete. Saving Candidate...");
     await candidateAgent.save(CANDIDATE_PATH, { fileSystem: fs, nativePath: path });
