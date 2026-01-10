@@ -705,9 +705,12 @@ const Board = ({ disableBackground = false }: BoardProps) => {
                     style={{
                         gridTemplateColumns: `repeat(${BOARD_COLS}, minmax(0, 1fr))`,
                         gridTemplateRows: `repeat(${BOARD_ROWS}, minmax(0, 1fr))`,
-                        // AGGRESSIVE Responsive Sizing:
-                        // Use 99% of the smaller dimension to maximize board size on ALL devices
-                        width: 'min(99vw, 99vh)',
+                        // Responsive Sizing:
+                        // Landscape: Use 95% of viewport height (taller board fills screen better)
+                        // Portrait: Use 95% of viewport width
+                        width: 'min(95vw, 95vh)',
+                        height: 'min(95vw, 95vh)',
+                        maxHeight: '95vh',
                         aspectRatio: '1/1'
                     }}
                     onClick={() => {
