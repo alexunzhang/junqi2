@@ -24,16 +24,29 @@ const Piece: React.FC<PieceProps> = ({ piece, isSelected, onClick, forceReveal, 
         }
     };
 
+    // Piece sizing based on player position:
+    // Top/Bottom (0, 2) = Flat/Wide (short vertically, long horizontally)
+    // Left/Right (1, 3) = Tall/Narrow (tall vertically, short horizontally)
+    const getPieceSizing = (pid: number) => {
+        if (pid === 0 || pid === 2) {
+            // Top/Bottom: Flat pieces (wide, short)
+            return 'w-10 h-5 md:w-14 md:h-7 lg:w-16 lg:h-8';
+        } else {
+            // Left/Right: Tall pieces (narrow, tall)
+            return 'w-5 h-10 md:w-7 md:h-14 lg:w-8 lg:h-16';
+        }
+    };
+
     return (
         <div
             onClick={onClick}
             className={`
-        w-10 h-6 md:w-12 md:h-8 lg:w-14 lg:h-9
+        ${getPieceSizing(piece.player)}
         flex items-center justify-center
         border-2 rounded
         cursor-pointer
         select-none
-        text-xs md:text-sm font-bold
+        text-[0.5rem] md:text-xs font-bold
         whitespace-nowrap
         transition-transform
         ${getRotation(piece.player)}
@@ -43,13 +56,8 @@ const Piece: React.FC<PieceProps> = ({ piece, isSelected, onClick, forceReveal, 
         relative
       `}
         >
-            {/* Responsive piece name: 1 char on mobile, 2 chars on md+ */}
-            {showContent && (
-                <>
-                    <span className="md:hidden">{getShortPieceName(piece.type)}</span>
-                    <span className="hidden md:inline">{getPieceName(piece.type)}</span>
-                </>
-            )}
+            {/* Always show full piece name */}
+            {showContent && getPieceName(piece.type)}
 
             {/* User Mark Overlay - Counter Rotated to be upright for User */}
             {mark && (
