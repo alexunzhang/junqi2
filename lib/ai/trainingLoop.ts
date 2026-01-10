@@ -55,7 +55,7 @@ const DEFAULT_CONFIG: TrainingConfig = {
     useNeuralNetwork: true,     // Default on
     autoLoadModel: true,
     trainOnGames: true,
-    epsilon: 0.2,
+    epsilon: 0.1, // Lower exploration for more consistent training data
     maxTurnsPerGame: 500,
     alternateStartPlayer: false, // Default off for training, on for Arena
     swapTeamsInArena: false, // Default off for training, on for Arena

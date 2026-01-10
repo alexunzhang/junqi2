@@ -4,7 +4,7 @@ import { BoardNode, Piece, PieceType } from '../types';
 import { BOARD_ROWS, BOARD_COLS } from '../constants';
 
 // Hyperparameters
-const LEARNING_RATE = 0.0001; // Slower, more stable learning (prevents catastrophic forgetting)
+const LEARNING_RATE = 0.00001; // Very slow learning for stability (10x slower than before)
 const INPUT_SHAPE = [BOARD_ROWS, BOARD_COLS, 5]; // 5 Channels
 const REPLAY_CAPACITY = 10000;
 const BATCH_SIZE = 32;
