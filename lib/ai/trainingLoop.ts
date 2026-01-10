@@ -132,10 +132,23 @@ export class TrainingManager {
             totalTurns += result.turns;
             totalReward += result.totalReward;
 
+            // Count MODEL wins (Candidate vs Champion), not TEAM wins
+            // When swapped (odd games with swapTeamsInArena): Team0=Champion, Team1=Candidate
+            // So Team0 win with swap = Champion win, Team1 win with swap = Candidate win
+            const isSwapped = this.config.swapTeamsInArena && (this.stats.gamesPlayed % 2 === 1);
+
             if (result.winner === 0) {
-                this.stats.team0Wins++;
+                if (isSwapped) {
+                    this.stats.team1Wins++; // Team0 used Champion, so this is a Champion win
+                } else {
+                    this.stats.team0Wins++; // Team0 used Candidate, so this is a Candidate win
+                }
             } else if (result.winner === 1) {
-                this.stats.team1Wins++;
+                if (isSwapped) {
+                    this.stats.team0Wins++; // Team1 used Candidate, so this is a Candidate win
+                } else {
+                    this.stats.team1Wins++; // Team1 used Champion, so this is a Champion win
+                }
             }
 
             this.stats.avgGameLength = totalTurns / this.stats.gamesPlayed;
