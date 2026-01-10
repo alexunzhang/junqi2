@@ -789,30 +789,6 @@ const Board = ({ disableBackground = false }: BoardProps) => {
                 </div>
             </div>
 
-            {/* Marking Menu for marking opponent pieces */}
-            {markingMenuPos && markingTargetId && (
-                <MarkingMenu
-                    position={markingMenuPos}
-                    onSelect={(label) => {
-                        if (label) {
-                            setUserMarks(prev => ({ ...prev, [markingTargetId]: label }));
-                        } else {
-                            setUserMarks(prev => {
-                                const newMarks = { ...prev };
-                                delete newMarks[markingTargetId];
-                                return newMarks;
-                            });
-                        }
-                        setMarkingMenuPos(null);
-                        setMarkingTargetId(null);
-                    }}
-                    onClose={() => {
-                        setMarkingMenuPos(null);
-                        setMarkingTargetId(null);
-                    }}
-                />
-            )}
-
             {/* Training Panel Modal */}
             <TrainingPanel
                 isOpen={showTrainingPanel}
