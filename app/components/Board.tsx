@@ -51,6 +51,9 @@ const Board = ({ disableBackground = false }: BoardProps) => {
     // Training Panel State
     const [showTrainingPanel, setShowTrainingPanel] = useState(false);
 
+    // Intro Video State (plays once on first page load)
+    const [introVideoPlaying, setIntroVideoPlaying] = useState(true);
+
     // Track if this is the first load (for skipping intro animation on restart)
     const isFirstLoad = useRef(true);
 
@@ -590,6 +593,28 @@ const Board = ({ disableBackground = false }: BoardProps) => {
             className={`flex flex-col items-center justify-center p-4 overflow-hidden ${disableBackground ? '' : 'min-h-screen bg-cover bg-center bg-no-repeat bg-fixed'}`}
             style={disableBackground ? {} : { backgroundImage: "url('/bg.jpg')" }}
         >
+            {/* Intro Video Overlay - Plays on first page load */}
+            {introVideoPlaying && (
+                <div className="fixed inset-0 z-[100] bg-black flex items-center justify-center">
+                    <video
+                        autoPlay
+                        muted
+                        playsInline
+                        onEnded={() => setIntroVideoPlaying(false)}
+                        className="w-full h-full object-cover"
+                    >
+                        <source src="/intro.mp4" type="video/mp4" />
+                    </video>
+                    {/* Skip Button */}
+                    <button
+                        onClick={() => setIntroVideoPlaying(false)}
+                        className="absolute bottom-8 right-8 px-6 py-3 bg-white/20 hover:bg-white/40 text-white rounded-full font-bold text-lg backdrop-blur-sm transition-all duration-300 border border-white/30"
+                    >
+                        跳过 Skip →
+                    </button>
+                </div>
+            )}
+
             {/* Marking Menu - Rendered at top level to avoid CSS transform interference */}
             {markingMenuPos && (
                 <MarkingMenu
