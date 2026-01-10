@@ -45,6 +45,7 @@ export interface TrainingConfig {
     trainOnGames: boolean;
     epsilon: number;
     maxTurnsPerGame: number;
+    alternateStartPlayer?: boolean; // NEW: Alternate which team moves first
 }
 
 const DEFAULT_CONFIG: TrainingConfig = {
@@ -55,6 +56,7 @@ const DEFAULT_CONFIG: TrainingConfig = {
     trainOnGames: true,
     epsilon: 0.2,
     maxTurnsPerGame: 500,
+    alternateStartPlayer: false, // Default off for training, on for Arena
 };
 
 export class TrainingManager {
@@ -178,7 +180,10 @@ export class TrainingManager {
         }
 
         const deadPlayers: PlayerId[] = [];
-        let currentPlayer: PlayerId = 0;
+        // Alternate starting player for fair Arena comparison
+        // If gameIndex is odd and alternateStartPlayer is true, start with Team 1
+        const startPlayer = (this.config.alternateStartPlayer && this.stats.gamesPlayed % 2 === 1) ? 1 : 0;
+        let currentPlayer: PlayerId = startPlayer as PlayerId;
         let turns = 0;
         let totalReward = 0;
 

@@ -56,10 +56,9 @@ async function main() {
     await candidateAgent.load(CHAMPION_PATH);
 
     // 3. Train Candidate (Self-Play)
-    // DIAGNOSTIC TEST: Skip training to verify Arena setup
-    // If Candidate (clone of Champion) gets ~50%, Arena is correct
-    // If still ~2%, there's a bug in Arena setup or model loading
-    trainer.updateConfig({ numGames: 0 }); // Skip training entirely
+    console.log("\n--- Phase 1: Training Candidate (Self-Play) ---");
+    // In production, set this to 500-1000
+    trainer.updateConfig({ numGames: 350 });
 
     await trainer.runTraining(); // This trains candidateAgent via update() loops
 
@@ -125,7 +124,8 @@ async function main() {
         useNeuralNetwork: true,
         autoLoadModel: false,
         trainOnGames: false, // Important: No learning during Exam
-        epsilon: 0.05 // Low exploration
+        epsilon: 0.05, // Low exploration
+        alternateStartPlayer: true // CRITICAL: Alternate who moves first for fair comparison
     }, true); // forceNew = true
 
     // Run Duel
