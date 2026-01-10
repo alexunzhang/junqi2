@@ -598,6 +598,7 @@ const Board = ({ disableBackground = false }: BoardProps) => {
                 <div className="fixed inset-0 z-[100] bg-black flex items-center justify-center">
                     <video
                         autoPlay
+                        muted
                         playsInline
                         onEnded={() => setIntroVideoPlaying(false)}
                         className="w-full h-full object-cover"
