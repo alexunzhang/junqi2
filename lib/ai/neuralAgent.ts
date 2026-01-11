@@ -92,8 +92,8 @@ export class NeuralAgent {
         // 3. Scale to Rule Engine magnitude
         // DQN outputs ~ -100 to 100 (Reward cumulative)
         // Rule engine uses ~1000 for small things, 1M for big.
-        // Multiplier: 5000 gives NN significant influence on decisions.
-        return value * 5000;
+        // Multiplier: 10000 gives NN strong influence on decisions (increased from 5000).
+        return value * 10000;
     }
 
     /**
