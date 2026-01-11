@@ -76,7 +76,7 @@ async function main() {
     // We use candidateAgent.getModel() as "candidate" and championForTraining as "champion"
     candidateAgent.setArenaMode(candidateAgent.getModel(), championForTraining);
 
-    trainer.updateConfig({ numGames: 500 }); // 500 games against Champion
+    trainer.updateConfig({ numGames: 1000 }); // 1000 games against Champion (increased for more learning)
 
     await trainer.runTraining(); // This trains candidateAgent via update() loops
 
