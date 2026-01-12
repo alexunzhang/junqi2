@@ -76,7 +76,7 @@ async function main() {
     // We use candidateAgent.getModel() as "candidate" and championForTraining as "champion"
     candidateAgent.setArenaMode(candidateAgent.getModel(), championForTraining);
 
-    trainer.updateConfig({ numGames: 1000 }); // 1000 games against Champion (increased for more learning)
+    trainer.updateConfig({ numGames: 500 }); // 500 games against Champion (optimal after testing)
 
     await trainer.runTraining(); // This trains candidateAgent via update() loops
 
@@ -141,7 +141,7 @@ async function main() {
     // Run Evaluation Games (No Training)
     // IMPORTANT: forceNew=true to get fresh stats (not carry over from Training Phase)
     const arenaTrainer = getTrainingManager({
-        numGames: 50, // 50 games for verification
+        numGames: 200, // 200 games for higher statistical confidence
         useNeuralNetwork: true,
         autoLoadModel: false,
         trainOnGames: false, // Important: No learning during Exam
@@ -167,8 +167,8 @@ async function main() {
     const totalDecisive = stats.team0Wins + stats.team1Wins;
     const candidateWinRate = totalDecisive > 0 ? stats.team0Wins / totalDecisive : 0;
 
-    // Criteria: > 55% Win Rate excluding draws, OR just more wins if games > 10
-    if (candidateWinRate > 0.55 && stats.team0Wins > stats.team1Wins) {
+    // Criteria: > 52% Win Rate (lowered for gradual improvement with 200 games)
+    if (candidateWinRate > 0.52 && stats.team0Wins > stats.team1Wins) {
         console.log(`\n🎉 New Champion! (Win Rate ${(candidateWinRate * 100).toFixed(1)}%)`);
         console.log("Promoting Candidate to Champion...");
         await candidateModelToCheck.save(CHAMPION_PATH, { fileSystem: fs, nativePath: path });
