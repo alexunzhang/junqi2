@@ -167,8 +167,8 @@ async function main() {
     const totalDecisive = stats.team0Wins + stats.team1Wins;
     const candidateWinRate = totalDecisive > 0 ? stats.team0Wins / totalDecisive : 0;
 
-    // Criteria: > 52% Win Rate (lowered for gradual improvement with 200 games)
-    if (candidateWinRate > 0.52 && stats.team0Wins > stats.team1Wins) {
+    // Criteria: > 51% Win Rate (lowered to enable cumulative improvement with 200 games)
+    if (candidateWinRate > 0.51 && stats.team0Wins > stats.team1Wins) {
         console.log(`\n🎉 New Champion! (Win Rate ${(candidateWinRate * 100).toFixed(1)}%)`);
         console.log("Promoting Candidate to Champion...");
         await candidateModelToCheck.save(CHAMPION_PATH, { fileSystem: fs, nativePath: path });
