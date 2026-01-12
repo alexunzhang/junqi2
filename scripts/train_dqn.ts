@@ -153,7 +153,8 @@ async function main() {
     // Run Duel
     // We intercept progress to enable logging
     arenaTrainer.setProgressCallback((curr, total, stats) => {
-        process.stdout.write(`\rArena Game ${curr}/${total}: Cand Wins=${stats.team0Wins} Champ Wins=${stats.team1Wins} Draws=${stats.team0Wins + stats.team1Wins - curr}`);
+        const draws = curr - stats.team0Wins - stats.team1Wins;
+        process.stdout.write(`\rArena Game ${curr}/${total}: Cand Wins=${stats.team0Wins} Champ Wins=${stats.team1Wins} Draws=${draws}`);
     });
 
     const stats = await arenaTrainer.runTraining();
@@ -161,13 +162,16 @@ async function main() {
     // Reset Arena Mode
     candidateAgent.clearArenaMode();
 
-    console.log(`\nArena Result: Candidate ${stats.team0Wins} - ${stats.team1Wins} Champion (Draws ${stats.gamesPlayed - stats.team0Wins - stats.team1Wins})`);
-
     // 5. Decision
-    const totalDecisive = stats.team0Wins + stats.team1Wins;
-    const candidateWinRate = totalDecisive > 0 ? stats.team0Wins / totalDecisive : 0;
+    // Draws count as 0.5 wins for each side (standard fair approach)
+    const draws = stats.gamesPlayed - stats.team0Wins - stats.team1Wins;
+    const candidateScore = stats.team0Wins + (draws * 0.5);
+    const totalScore = stats.gamesPlayed;
+    const candidateWinRate = totalScore > 0 ? candidateScore / totalScore : 0;
 
-    // Criteria: > 51% Win Rate (lowered to enable cumulative improvement with 200 games)
+    console.log(`\nArena Result: Candidate ${stats.team0Wins} - ${stats.team1Wins} Champion (Draws ${draws})`);
+
+    // Criteria: > 51% Win Rate (draws count as 0.5)
     if (candidateWinRate > 0.51 && stats.team0Wins > stats.team1Wins) {
         console.log(`\n🎉 New Champion! (Win Rate ${(candidateWinRate * 100).toFixed(1)}%)`);
         console.log("Promoting Candidate to Champion...");
