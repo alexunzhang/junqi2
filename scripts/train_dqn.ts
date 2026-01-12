@@ -35,7 +35,7 @@ async function main() {
     const MODELS_DIR = path.resolve(__dirname, '../public/models');
     ensureDir(MODELS_DIR);
 
-    const CHAMPION_PATH = path.join(MODELS_DIR, 'junqi_dqn_v1'); // production model
+    const CHAMPION_PATH = path.join(MODELS_DIR, 'junqi_dqn_v2'); // v2 model (7 channels)
     const CANDIDATE_PATH = path.resolve(__dirname, '../temp_candidate');
     ensureDir(CANDIDATE_PATH);
 
@@ -53,19 +53,25 @@ async function main() {
     const candidateAgent = trainer.getNeuralAgentInstance();
 
     // Try to load existing champion to start from (Candidate begins as a clone of Champion)
-    await candidateAgent.load(CHAMPION_PATH);
+    try {
+        await candidateAgent.load(CHAMPION_PATH);
+        console.log("Loaded existing Candidate/Champion from v2.");
+    } catch (e) {
+        console.log("No existing v2 model found. Starting fresh Candidate (Random Weights).");
+    }
 
     // Load Champion Model for "Train vs Champion" mode
     console.log("Loading Champion as training opponent...");
     const championForTraining = new DQNModel();
     try {
-        if (fs.existsSync(path.join(CHAMPION_PATH, 'model.json'))) {
-            await championForTraining.load(CHAMPION_PATH);
-            console.log("Champion loaded as training opponent.");
-        }
+        await championForTraining.load(CHAMPION_PATH);
+        console.log("Champion loaded as training opponent.");
     } catch (e) {
-        console.log("No Champion found - will use self-play for first run.");
+        console.log("No existing Champion found. Using Random Champion (Weak Baseline).");
+        // For the very first run of v2, the Champion is also random.
+        // This is fine, we will elevate quickly.
     }
+
 
     // 3. Train Candidate vs Champion (NOT self-play!)
     // Team 0 (Candidate) learns by playing against Team 1 (Champion)

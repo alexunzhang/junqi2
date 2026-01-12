@@ -26,7 +26,7 @@ const PIECE_VALUES: Record<number, number> = {
     [PieceType.Engineer]: 25,
     [PieceType.Bomb]: 35,
     [PieceType.Mine]: 20,
-    [PieceType.Flag]: 100,
+    [PieceType.Flag]: 500,
 };
 
 export interface TrainingStats {
@@ -327,8 +327,18 @@ export class TrainingManager {
             const gameOver = checkGameOver(board as BoardNode[][], deadPlayers);
             if (gameOver.newDeadPlayers.length > 0) deadPlayers.push(...gameOver.newDeadPlayers);
 
-            // NN Update
             if (this.config.useNeuralNetwork && this.config.trainOnGames) {
+                // Add Final Game Outcome Reward
+                // If Game Over, the 'reward' variable currently only has capture points.
+                // We MUST add the huge Win/Loss bonus so the AI learns to win!
+                if (gameOver.isOver) {
+                    const winnerTeam = gameOver.winnerTeam!;
+                    const isWinner = (currentPlayer % 2 === winnerTeam);
+                    reward += isWinner ? 1000 : -1000;
+                    // Note: We are only updating the Current Player (who made the last move).
+                    // Ideally we'd update teammates too, but this is a major improvement over nothing.
+                }
+
                 // Update neural network memory (State -> Reward -> NextState)
                 await this.neuralAgent.update(currentBoardSnapshot, reward, board, gameOver.isOver, currentPlayer);
             }
@@ -336,17 +346,7 @@ export class TrainingManager {
             totalReward += reward;
 
             if (gameOver.isOver) {
-                // Final Rewards
-                const winnerTeam = gameOver.winnerTeam!;
-                for (let pid = 0; pid < 4; pid++) {
-                    const finalReward = (pid % 2 === winnerTeam) ? 1000 : -1000;
-                    if (this.config.useNeuralNetwork) {
-                        // We can feed a final experience (Last Seen Board -> Result)
-                        // But we didn't store last board map perfectly here.
-                        // Just ignore final terminal update for this simple v1
-                    }
-                }
-                return { winner: winnerTeam, turns, totalReward };
+                return { winner: gameOver.winnerTeam!, turns, totalReward };
             }
 
             turns++;

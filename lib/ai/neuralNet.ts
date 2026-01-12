@@ -5,7 +5,7 @@ import { BOARD_ROWS, BOARD_COLS } from '../constants';
 
 // Hyperparameters
 const LEARNING_RATE = 0.00001; // Very slow learning for stability (10x slower than before)
-const INPUT_SHAPE = [BOARD_ROWS, BOARD_COLS, 5]; // 5 Channels
+const INPUT_SHAPE = [BOARD_ROWS, BOARD_COLS, 7]; // 7 Channels (Added Camp, HQ)
 const REPLAY_CAPACITY = 10000;
 const BATCH_SIZE = 32;
 
@@ -68,7 +68,7 @@ export class DQNModel {
     // Convert Board State to Tensor [1, 17, 17, 5]
     public stateToTensor(board: (BoardNode | null)[][], playerId: number): tf.Tensor {
         return tf.tidy(() => {
-            const buffer = tf.buffer([1, BOARD_ROWS, BOARD_COLS, 5]);
+            const buffer = tf.buffer([1, BOARD_ROWS, BOARD_COLS, 7]);
 
             for (let r = 0; r < BOARD_ROWS; r++) {
                 for (let c = 0; c < BOARD_COLS; c++) {
@@ -77,6 +77,10 @@ export class DQNModel {
                     // Channel 4: Board Features (Static)
                     // Simplified: just 0.5 (placeholder) or specific rail map if needed
                     buffer.set(node?.isRailway ? 1 : 0, 0, r, c, 4);
+                    // Channel 5: Campsite
+                    buffer.set(node?.type === 'campsite' ? 1 : 0, 0, r, c, 5);
+                    // Channel 6: Headquarters
+                    buffer.set(node?.type === 'hq' ? 1 : 0, 0, r, c, 6);
 
                     if (node?.piece) {
                         const p = node.piece;
