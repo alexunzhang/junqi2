@@ -26,7 +26,7 @@ const PIECE_VALUES: Record<number, number> = {
     [PieceType.Engineer]: 25,
     [PieceType.Bomb]: 35,
     [PieceType.Mine]: 20,
-    [PieceType.Flag]: 500,
+    [PieceType.Flag]: 250, // 5x Commander - win condition but balanced with piece preservation
 };
 
 export interface TrainingStats {

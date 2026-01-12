@@ -90,10 +90,14 @@ export class NeuralAgent {
         const value = await this.getModelForPlayer(playerId).predict(nextBoard, playerId);
 
         // 3. Scale to Rule Engine magnitude
-        // DQN outputs ~ -100 to 100 (Reward cumulative)
-        // Rule engine uses ~1000 for small things, 1M for big.
-        // Multiplier: 5000 gives NN significant influence (reverted from 10000 - 51.1% was best).
-        return value * 5000;
+        // DQN outputs ~ 0 to 2000 (Reward: Win=1000, Flag=500, Captures=~15-50)
+        // Rule Engine Logic: Commander=1000, Threat=25000, SuicidePenalty=-50000
+        //
+        // Previous Multiplier 5000 was WAY too high (50 * 5000 = 250,000 override suicide!)
+        // New Multiplier 30:
+        // - Win (1000) -> +30,000 (Strong strategic bias, comparable to Threat)
+        // - Commander (50) -> +1,500 (Bias, but won't override Suicide -50,000)
+        return value * 30;
     }
 
     /**
