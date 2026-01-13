@@ -105,36 +105,13 @@ async function main() {
             console.log("Champion loaded for Arena.");
             championExists = true;
         } else {
-            console.log("No existing champion model found. First run?");
-            console.log("No Champion to fight. Candidate wins by default.");
-            await candidateAgent.save(CHAMPION_PATH, { fileSystem: fs, nativePath: path });
-
-            // Initialize Version File
-            const versionData = {
-                version: `v1.0.${Date.now()}`,
-                updated: new Date().toISOString(),
-                winRate: 'N/A (First Run)'
-            };
-            fs.writeFileSync(path.join(MODELS_DIR, 'version.json'), JSON.stringify(versionData, null, 2));
-            console.log("New Champion saved to:", CHAMPION_PATH);
-            console.log("Initialized Version:", versionData.version);
-            return; // Exit main function as candidate is now champion
+            console.log("No existing champion model found. Initializing RANDOM Champion for first duel.");
+            // We use the fresh championModel (random weights) as the opponent
+            championExists = true;
         }
     } catch (e) {
-        console.log("Error loading champion:", e);
-        console.log("No Champion to fight due to load error. Candidate wins by default.");
-        await candidateAgent.save(CHAMPION_PATH, { fileSystem: fs, nativePath: path });
-
-        // Initialize Version File
-        const versionData = {
-            version: `v1.0.${Date.now()}`,
-            updated: new Date().toISOString(),
-            winRate: 'N/A (First Run - Error)'
-        };
-        fs.writeFileSync(path.join(MODELS_DIR, 'version.json'), JSON.stringify(versionData, null, 2));
-        console.log("New Champion saved to:", CHAMPION_PATH);
-        console.log("Initialized Version:", versionData.version);
-        return; // Exit main function as candidate is now champion
+        console.log("Error loading champion, using Random Champion:", e);
+        championExists = true; // Proceed with random
     }
 
     // Load Candidate Model into a fresh instance for the Arena logic verification

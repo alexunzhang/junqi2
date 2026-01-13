@@ -134,11 +134,11 @@ export class NeuralAgent {
     /**
      * Save/Load
      */
-    public async save(path: string = 'junqi_dqn_v1', options?: any) {
+    public async save(path: string = 'junqi_dqn_v2', options?: any) {
         await this.model.save(path, options);
     }
 
-    public async load(path: string = 'junqi_dqn_v1') {
+    public async load(path: string = 'junqi_dqn_v2') {
         await this.model.load(path);
     }
 
