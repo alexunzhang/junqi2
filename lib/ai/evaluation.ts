@@ -500,8 +500,19 @@ export class AIEvaluator {
                 }
 
                 // If we have other small pieces AND target is NOT likely mine/bomb, penalize Engineer attack
-                if (hasOtherSmallPieces && !isProbablyMineOrBomb) {
-                    moveValue -= 3000; // Save engineer for mines!
+                if (hasOtherSmallPieces) {
+                    // Logic Improvement: Front Row pieces CANNOT be Mines.
+                    // Using an Engineer to probe a Front Row piece is silly if we have a Platoon.
+                    // (Platoon cost 15 < Engineer 25).
+                    const isBackRow = targetMem?.isInBackRows ?? false;
+
+                    if (!isBackRow) {
+                        // Target is definitely NOT a Mine. Use Fodder instead!
+                        moveValue -= 4000;
+                    } else if (!isProbablyMineOrBomb) {
+                        // Back row, but probably not mine/bomb -> Penalize
+                        moveValue -= 3000;
+                    }
                 }
 
                 // If already probed, absolutely do NOT use another Engineer
