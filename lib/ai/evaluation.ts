@@ -458,11 +458,32 @@ export class AIEvaluator {
                     else if (myRank <= defeatedRank + 1) {
                         moveValue -= 5000; // Risky - could be bomb or same-rank trap
                     }
+                }
 
-                    // Special case: If enemy piece is in back rows and survived an attack,
-                    // it might be a Mine, Bomb, or Flag - only engineer for Mine
-                    if (targetMem.isInBackRows && sourceNode.piece.type !== PieceType.Engineer) {
-                        moveValue -= 15000; // Back row survivor = likely Mine/Bomb
+                // Special case: If enemy piece is in back rows and survived an attack,
+                // it might be a Mine, Bomb, or Flag - only engineer for Mine
+                if (targetMem && targetMem.isInBackRows && sourceNode.piece.type !== PieceType.Engineer) {
+                    moveValue -= 15000; // Back row survivor = likely Mine/Bomb
+                }
+            }
+
+            // --- RULE: ANTI-OSCILLATION (REPETITION PENALTY) ---
+            // If we are repeating a move we made recently (e.g. A->B, B->A, A->B), penalize it!
+            // Get my recent moves from history
+            if (history && history.length > 0) {
+                // Filter history for my moves only
+                const myMoves = history.filter(m => m.player === playerId); // Use m.player matching logic
+                if (myMoves.length >= 2) {
+                    const lastMove = myMoves[myMoves.length - 1];
+                    const secondLastMove = myMoves[myMoves.length - 2];
+
+                    // Scenario 2: 3-fold repetition (A->B, B->A, A->B)
+                    // If current move matches secondLastMove (Same From/To)
+                    // Note: We check coordinates.
+                    if (move.from.x === secondLastMove.from.x && move.from.y === secondLastMove.from.y &&
+                        move.to.x === secondLastMove.to.x && move.to.y === secondLastMove.to.y) {
+                        // We are repeating the move from 2 turns ago!
+                        moveValue -= 5000; // Stop oscillating!
                     }
                 }
             }
@@ -545,28 +566,125 @@ export class AIEvaluator {
             }
 
             // --- RULE 4: ENHANCED FLAG DEFENSE (LATE GAME) ---
-            // In late game, much higher priority on flag protection
+            // "Best Defense is Offense" Strategy:
+            // Only 1 strong piece should guard the flag. Others should attack!
             // Count our remaining pieces to determine if it's late game
             let currentPieceCount = 0;
+            const nearbyDefenders: { type: PieceType; row: number; col: number; id: string }[] = [];
             for (let r = 0; r < BOARD_ROWS; r++) {
                 for (let c = 0; c < BOARD_COLS; c++) {
                     const p = board[r][c]?.piece;
-                    if (p && p.player === playerId) currentPieceCount++;
+                    if (p && p.player === playerId) {
+                        currentPieceCount++;
+                        // Track pieces near flag that can defend
+                        if (flagPos) {
+                            const distToFlag = Math.abs(r - flagPos.r) + Math.abs(c - flagPos.c);
+                            // Pieces within 3 squares of flag and can move (not Mine/Flag)
+                            if (distToFlag <= 3 && p.type !== PieceType.Mine && p.type !== PieceType.Flag) {
+                                nearbyDefenders.push({ type: p.type, row: r, col: c, id: p.id });
+                            }
+                        }
+                    }
                 }
             }
+
             const isLateGame = (currentPieceCount <= 10);
             if (isLateGame && flagPos && flagThreats.size > 0) {
-                // Triple the normal defense bonuses in late game
-                const distToFlag = Math.abs(move.to.x - flagPos.r) + Math.abs(move.to.y - flagPos.c);
-                if (distToFlag <= 2) {
-                    moveValue += 3000; // Extra bonus for staying near flag in late game
+                // === REFINED DEFENDER SELECTION ===
+                // 1. Commander (50) and Corps (45) should ATTACK, not be fixed defenders
+                // 2. Division (40), Brigade (38), Regiment (37) are "strong enough" to defend
+                // 3. Top pieces only defend when threat is CRITICAL (1-2 moves away)
+
+                // Separate defenders into tiers
+                const topTierPieces = nearbyDefenders.filter(d =>
+                    d.type === PieceType.Commander || d.type === PieceType.Corps
+                );
+                const midTierDefenders = nearbyDefenders.filter(d =>
+                    d.type >= PieceType.Regiment && d.type <= PieceType.Division
+                ); // Regiment (37), Brigade (38), Division (40)
+                const anyDefenders = nearbyDefenders.filter(d =>
+                    d.type >= PieceType.Battalion // Battalion (36) or higher
+                );
+
+                // Pick designated defender: prefer mid-tier, fallback to any
+                let designatedDefenderId: string | null = null;
+                if (midTierDefenders.length > 0) {
+                    // Pick strongest mid-tier (Division > Brigade > Regiment)
+                    midTierDefenders.sort((a, b) => b.type - a.type);
+                    designatedDefenderId = midTierDefenders[0].id;
+                } else if (anyDefenders.length > 0) {
+                    // No mid-tier available, use whatever we have (but NOT top tier if possible)
+                    const nonTopDefenders = anyDefenders.filter(d =>
+                        d.type !== PieceType.Commander && d.type !== PieceType.Corps
+                    );
+                    if (nonTopDefenders.length > 0) {
+                        designatedDefenderId = nonTopDefenders[0].id;
+                    } else {
+                        // Only top-tier pieces left, one of them must defend
+                        designatedDefenderId = anyDefenders[0].id;
+                    }
                 }
 
-                // Penalize moving AWAY from flag when threats exist
+                const isDesignatedDefender = sourceNode.piece.id === designatedDefenderId;
+                const isTopTierPiece = sourceNode.piece.type === PieceType.Commander ||
+                    sourceNode.piece.type === PieceType.Corps;
+
+                // Check threat urgency (critical = 1-2 moves away)
+                const hasCriticalThreat = flagThreats.size > 0; // Simplified - flagThreats is already filtered by distance
+
+                // Distance calculations
+                const distToFlag = Math.abs(move.to.x - flagPos.r) + Math.abs(move.to.y - flagPos.c);
                 const distBeforeFlag = Math.abs(move.from.x - flagPos.r) + Math.abs(move.from.y - flagPos.c);
                 const distAfterFlag = Math.abs(move.to.x - flagPos.r) + Math.abs(move.to.y - flagPos.c);
-                if (distAfterFlag > distBeforeFlag && distBeforeFlag <= 3) {
-                    moveValue -= 4000; // Don't abandon flag defense
+
+                if (isDesignatedDefender) {
+                    // This piece IS the designated defender - apply defense bonuses
+                    if (distToFlag <= 2) {
+                        moveValue += 3000; // Stay near flag
+                    }
+                    if (distAfterFlag > distBeforeFlag && distBeforeFlag <= 3) {
+                        moveValue -= 4000; // Don't leave when you're the defender
+                    }
+                } else if (isTopTierPiece) {
+                    // TOP TIER (Commander/Corps) - Primary attackers!
+                    // But should return for CRITICAL threats
+                    if (hasCriticalThreat && distToFlag <= 2) {
+                        // Critical threat and we can help - small defense bonus
+                        moveValue += 1000; // Help defend critical threat
+                    } else {
+                        // No critical threat or too far - go attack!
+                        if (distToFlag <= 2) {
+                            moveValue -= 2000; // Don't crowd near flag, go attack!
+                        }
+                        // BONUS for attacking enemies
+                        if (targetNode?.piece) {
+                            const isEnemyTarget = targetNode.piece.player !== playerId &&
+                                (targetNode.piece.player + 2) % 4 !== playerId;
+                            if (isEnemyTarget) {
+                                moveValue += 8000; // Top pieces get bigger attack bonus!
+                            }
+                        }
+                        // Forward movement bonus
+                        if (distAfterFlag > distBeforeFlag) {
+                            moveValue += 2000; // Encourage forward movement
+                        }
+                    }
+                } else {
+                    // OTHER PIECES - Not designated defender, not top tier
+                    // These should also attack, but with less urgency
+                    if (distToFlag <= 2 && nearbyDefenders.length > 1) {
+                        moveValue -= 500; // Small penalty for crowding
+                    }
+                    if (distAfterFlag > distBeforeFlag && targetNode?.piece) {
+                        const isEnemyTarget = targetNode.piece.player !== playerId &&
+                            (targetNode.piece.player + 2) % 4 !== playerId;
+                        if (isEnemyTarget) {
+                            moveValue += 4000; // Attack bonus
+                        }
+                    }
+                    if (distAfterFlag > distBeforeFlag) {
+                        moveValue += 1000; // Forward movement
+                    }
                 }
             }
 
@@ -1821,7 +1939,7 @@ export class AIEvaluator {
         // Move ordering: quick heuristic score for better pruning
         const scoredMoves = possibleMoves.map(move => ({
             move,
-            heuristic: this.quickMoveHeuristic(board, move, playerId)
+            heuristic: this.quickMoveHeuristic(board, move, playerId, memory)
         })).sort((a, b) => b.heuristic - a.heuristic);
 
         // Evaluate top moves with Minimax
@@ -1872,7 +1990,7 @@ export class AIEvaluator {
     /**
      * Quick heuristic for move ordering (fast evaluation without full search)
      */
-    private quickMoveHeuristic(board: (BoardNode | null)[][], move: { from: Position, to: Position }, playerId: PlayerId): number {
+    private quickMoveHeuristic(board: (BoardNode | null)[][], move: { from: Position, to: Position }, playerId: PlayerId, memory?: AIMemory): number {
         let score = 0;
         const target = board[move.to.x]?.[move.to.y]?.piece;
         const source = board[move.from.x]?.[move.from.y]?.piece;
@@ -1882,6 +2000,25 @@ export class AIEvaluator {
         // Capture bonus
         if (target && target.player !== playerId && (target.player + 2) % 4 !== playerId) {
             score += PIECE_VALUES[target.type] || 50;
+
+            // CRITICAL: Rule 0c - Suicide Prevention via Memory
+            // If this enemy has beaten one of our pieces of equal or higher rank, HUGE PENALTY!
+            if (memory) {
+                const targetMem = memory.getMemory(target.id);
+                if (targetMem && targetMem.defeatedOurRank > 0) {
+                    const myRank = source.type;
+                    const defeatedRank = targetMem.defeatedOurRank;
+
+                    // My piece is weaker or equal to what was already defeated -> guaranteed loss!
+                    if (myRank <= defeatedRank) {
+                        score -= 40000;
+                    }
+                    // Slightly stronger but still risky
+                    else if (myRank <= defeatedRank + 1) {
+                        score -= 5000;
+                    }
+                }
+            }
         }
 
         // Flag defense proximity bonus
