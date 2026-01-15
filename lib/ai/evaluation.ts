@@ -780,9 +780,16 @@ export class AIEvaluator {
 
                     // TEAMMATE_SUPPORT: skip defense in endgame, only defend critical threats otherwise
                     // OTHER PERSONAS: always defend (normal threat detection)
+                    // CRITICAL FIX: Flag about to fall (1-2 moves) = ALWAYS DEFEND, no exceptions!
                     let shouldDefend: boolean;
                     if (persona === 'TEAMMATE_SUPPORT') {
-                        shouldDefend = !inEndgameState && isCriticalThreat;
+                        // ALWAYS defend imminent threats (≤2 moves), even in endgame!
+                        // Only skip defense for distant, non-critical threats in endgame
+                        if (isCriticalThreat) {
+                            shouldDefend = true; // Flag is about to fall - MUST defend!
+                        } else {
+                            shouldDefend = !inEndgameState; // Skip non-critical in endgame
+                        }
                     } else {
                         // Enemy AI always defends normally
                         shouldDefend = true;
