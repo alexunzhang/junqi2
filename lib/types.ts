@@ -69,3 +69,55 @@ export interface GameState {
     selectedPosition: Position | null;
     possibleMoves: Position[];
 }
+
+// === Game Record Export (for AI Analysis) ===
+
+export interface PieceSetup {
+    id: string;
+    type: PieceType;
+    typeName: string; // Human-readable: "司令", "军长", etc.
+    position: Position;
+}
+
+export interface PlayerSetup {
+    playerId: PlayerId;
+    pieces: PieceSetup[];
+}
+
+export interface GameRecord {
+    gameId: string;           // Unique game identifier (timestamp)
+    startTime: string;        // ISO timestamp
+    endTime: string;          // ISO timestamp
+    result: 'Team0_Win' | 'Team1_Win' | 'Draw' | 'Ongoing';
+    winnerTeam: number | null;
+    totalTurns: number;
+
+    // Initial setup for all 4 players
+    initialSetup: PlayerSetup[];
+
+    // All moves with full piece information
+    moves: MoveRecord[];
+
+    // Summary statistics
+    stats: {
+        piecesCaptured: Record<PlayerId, number>;
+        piecesLost: Record<PlayerId, number>;
+        flagCapturedBy: PlayerId | null;
+    };
+}
+
+// Helper: Convert PieceType enum to Chinese name
+export const PIECE_TYPE_NAMES: Record<PieceType, string> = {
+    [PieceType.Commander]: '司令',
+    [PieceType.Corps]: '军长',
+    [PieceType.Division]: '师长',
+    [PieceType.Brigade]: '旅长',
+    [PieceType.Regiment]: '团长',
+    [PieceType.Battalion]: '营长',
+    [PieceType.Company]: '连长',
+    [PieceType.Platoon]: '排长',
+    [PieceType.Engineer]: '工兵',
+    [PieceType.Bomb]: '炸弹',
+    [PieceType.Mine]: '地雷',
+    [PieceType.Flag]: '军旗',
+};

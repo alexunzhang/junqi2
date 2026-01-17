@@ -5,7 +5,7 @@ import { createInitialBoard, initializePieces, getPossibleMoves, isValidMove, re
 import Piece from './Piece';
 import SaveLoadPanel from './SaveLoadPanel';
 import { BOARD_ROWS, BOARD_COLS } from '@/lib/constants';
-import { BoardNode, BoardNodeType, Position, Piece as PieceModel, PlayerId, MoveRecord, BattleResult, PieceType } from '@/lib/types';
+import { BoardNode, BoardNodeType, Position, Piece as PieceModel, PlayerId, MoveRecord, BattleResult, PieceType, GameRecord, PlayerSetup, PieceSetup, PIECE_TYPE_NAMES } from '@/lib/types';
 
 // AI Imports
 import { SmartAI, AIMemoryStore } from '@/lib/ai';
@@ -56,6 +56,82 @@ const Board = ({ disableBackground = false }: BoardProps) => {
 
     // Track if this is the first load (for skipping intro animation on restart)
     const isFirstLoad = useRef(true);
+
+    // Game Record for AI Analysis Export
+    const gameStartTime = useRef<string>('');
+    const initialSetupRef = useRef<PlayerSetup[]>([]);
+
+    // Helper: Capture all piece positions for a player at game start
+    const captureInitialSetup = (boardState: (BoardNode | null)[][]): PlayerSetup[] => {
+        const setups: PlayerSetup[] = [];
+        for (let pid = 0; pid < 4; pid++) {
+            const pieces: PieceSetup[] = [];
+            for (let r = 0; r < BOARD_ROWS; r++) {
+                for (let c = 0; c < BOARD_COLS; c++) {
+                    const piece = boardState[r]?.[c]?.piece;
+                    if (piece && piece.player === pid) {
+                        pieces.push({
+                            id: piece.id,
+                            type: piece.type,
+                            typeName: PIECE_TYPE_NAMES[piece.type] || 'Unknown',
+                            position: { x: r, y: c }
+                        });
+                    }
+                }
+            }
+            setups.push({ playerId: pid as PlayerId, pieces });
+        }
+        return setups;
+    };
+
+    // Helper: Generate and download game record
+    const exportGameRecord = () => {
+        const endTime = new Date().toISOString();
+        const result: GameRecord['result'] = winnerTeam === null ? 'Ongoing' :
+            winnerTeam === 0 ? 'Team0_Win' : 'Team1_Win';
+
+        // Calculate stats
+        const stats = {
+            piecesCaptured: { 0: 0, 1: 0, 2: 0, 3: 0 } as Record<PlayerId, number>,
+            piecesLost: { 0: 0, 1: 0, 2: 0, 3: 0 } as Record<PlayerId, number>,
+            flagCapturedBy: null as PlayerId | null
+        };
+
+        history.forEach(move => {
+            if (move.capturedPiece) {
+                const loserPlayer = move.capturedPiece.player;
+                const winnerPlayer = move.piece.player;
+                stats.piecesLost[loserPlayer]++;
+                stats.piecesCaptured[winnerPlayer]++;
+                if (move.capturedPiece.type === PieceType.Flag) {
+                    stats.flagCapturedBy = winnerPlayer;
+                }
+            }
+        });
+
+        const gameRecord: GameRecord = {
+            gameId: `game_${gameStartTime.current.replace(/[:.]/g, '-')}`,
+            startTime: gameStartTime.current,
+            endTime,
+            result,
+            winnerTeam,
+            totalTurns: history.length,
+            initialSetup: initialSetupRef.current,
+            moves: history,
+            stats
+        };
+
+        // Download as JSON file
+        const blob = new Blob([JSON.stringify(gameRecord, null, 2)], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `junqi_${gameRecord.gameId}.json`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+    };
 
     // Initial Deep Clone Helper
     const deepCloneBoard = (b: (BoardNode | null)[][]) => b.map(row => row.map(cell => cell ? { ...cell, piece: cell.piece ? { ...cell.piece } : null } : null));
@@ -558,6 +634,10 @@ const Board = ({ disableBackground = false }: BoardProps) => {
     const startGame = () => {
         const result = validateSetup(board as BoardNode[][], 0);
         if (result.valid) {
+            // Capture initial setup for game record export
+            gameStartTime.current = new Date().toISOString();
+            initialSetupRef.current = captureInitialSetup(board);
+
             setGameStatus('playing');
             setErrorMsg(null);
             setSelectedPos(null);
@@ -790,14 +870,20 @@ const Board = ({ disableBackground = false }: BoardProps) => {
                     {gameStatus === 'ended' && (
                         <div className="flex gap-4 p-4 bg-black/40 rounded-lg border border-white/10 backdrop-blur-sm">
                             {replayIndex === -1 ? (
-                                <button onClick={() => setReplayIndex(0)} className="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded shadow-lg border border-blue-400">
-                                    REVIEW GAME
-                                </button>
+                                <>
+                                    <button onClick={() => setReplayIndex(0)} className="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded shadow-lg border border-blue-400">
+                                        REVIEW GAME
+                                    </button>
+                                    <button onClick={exportGameRecord} className="px-6 py-2 bg-green-600 hover:bg-green-700 text-white font-bold rounded shadow-lg border border-green-400">
+                                        📥 EXPORT RECORD
+                                    </button>
+                                </>
                             ) : (
                                 <div className="flex items-center gap-4">
                                     <button onClick={() => setReplayIndex(Math.max(0, replayIndex - 1))} disabled={replayIndex <= 0} className="px-4 py-2 bg-gray-700 hover:bg-gray-600 disabled:opacity-50 text-white rounded border border-gray-500">PREV</button>
                                     <span className="text-white font-mono font-bold min-w-[100px] text-center">TURN {replayIndex} / {boardHistory.length - 1}</span>
                                     <button onClick={() => { if (replayIndex < boardHistory.length - 1) setReplayIndex(replayIndex + 1); }} disabled={replayIndex >= boardHistory.length - 1} className="px-4 py-2 bg-gray-700 hover:bg-gray-600 disabled:opacity-50 text-white rounded border border-gray-500">NEXT</button>
+                                    <button onClick={exportGameRecord} className="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded border border-green-500">📥 EXPORT</button>
                                     <button onClick={() => {
                                         // CRITICAL FIX: Use startNewGame() to properly reset all pieces!
                                         // Previous code manually reset state but forgot to call generateSmartSetup for AI
