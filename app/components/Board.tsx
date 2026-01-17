@@ -799,17 +799,11 @@ const Board = ({ disableBackground = false }: BoardProps) => {
                                     <span className="text-white font-mono font-bold min-w-[100px] text-center">TURN {replayIndex} / {boardHistory.length - 1}</span>
                                     <button onClick={() => { if (replayIndex < boardHistory.length - 1) setReplayIndex(replayIndex + 1); }} disabled={replayIndex >= boardHistory.length - 1} className="px-4 py-2 bg-gray-700 hover:bg-gray-600 disabled:opacity-50 text-white rounded border border-gray-500">NEXT</button>
                                     <button onClick={() => {
+                                        // CRITICAL FIX: Use startNewGame() to properly reset all pieces!
+                                        // Previous code manually reset state but forgot to call generateSmartSetup for AI
                                         setReplayIndex(-1);
-                                        setGameStatus('setup');
-                                        setHistory([]);
-                                        setBoardHistory([deepCloneBoard(createInitialBoard())]);
-                                        setBoard(createInitialBoard());
-                                        initializePieces(createInitialBoard());
-                                        setDeadPlayers([]);
-                                        setWinnerTeam(null);
-                                        setLastBattleResult(null);
-                                        setErrorMsg(null);
-                                    }} className="ml-4 px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded border border-red-500">EXIT REVIEW</button>
+                                        startNewGame();
+                                    }} className="ml-4 px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded border border-red-500">START NEW GAME</button>
                                 </div>
                             )}
                         </div>
