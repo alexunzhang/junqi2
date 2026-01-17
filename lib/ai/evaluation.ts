@@ -469,21 +469,29 @@ export class AIEvaluator {
 
             // --- RULE: ANTI-OSCILLATION (REPETITION PENALTY) ---
             // If we are repeating a move we made recently (e.g. A->B, B->A, A->B), penalize it!
-            // Get my recent moves from history
+            // Enhanced: Check 4-turn history for persistent oscillation patterns
             if (history && history.length > 0) {
                 // Filter history for my moves only
-                const myMoves = history.filter(m => m.player === playerId); // Use m.player matching logic
+                const myMoves = history.filter(m => m.player === playerId);
+
+                // Check 2-turn repetition (basic oscillation)
                 if (myMoves.length >= 2) {
-                    const lastMove = myMoves[myMoves.length - 1];
                     const secondLastMove = myMoves[myMoves.length - 2];
 
-                    // Scenario 2: 3-fold repetition (A->B, B->A, A->B)
                     // If current move matches secondLastMove (Same From/To)
-                    // Note: We check coordinates.
                     if (move.from.x === secondLastMove.from.x && move.from.y === secondLastMove.from.y &&
                         move.to.x === secondLastMove.to.x && move.to.y === secondLastMove.to.y) {
-                        // We are repeating the move from 2 turns ago!
-                        moveValue -= 5000; // Stop oscillating!
+                        moveValue -= 15000; // INCREASED: Stop oscillating!
+                    }
+                }
+
+                // Check 4-turn repetition (persistent oscillation pattern)
+                // Pattern: A->B, B->A, A->B, B->A - move 4 matches move 2
+                if (myMoves.length >= 4) {
+                    const fourthLastMove = myMoves[myMoves.length - 4];
+                    if (move.from.x === fourthLastMove.from.x && move.from.y === fourthLastMove.from.y &&
+                        move.to.x === fourthLastMove.to.x && move.to.y === fourthLastMove.to.y) {
+                        moveValue -= 25000; // SEVERE penalty for confirmed 4-turn oscillation!
                     }
                 }
             }
@@ -495,6 +503,51 @@ export class AIEvaluator {
                 if (targetMem && targetMem.probeCount >= 2) {
                     // Already probed 2+ times, stop wasting pieces on it
                     moveValue -= 5000;
+                }
+            }
+
+            // --- RULE 1b: HIGH-VALUE PIECE MID-LATE GAME AGGRESSION ---
+            // Commander/Corps should attack proactively in mid-late game instead of hiding
+            // "司令/军长在中后期应该主动出击"
+            const isTopPiece = [PieceType.Commander, PieceType.Corps].includes(sourceNode.piece.type);
+
+            if (isTopPiece && history && history.length > 20) { // After turn 20 = mid-game
+                // Calculate forward direction based on player position
+                // Player 0 (bottom) goes up (negative x), Player 2 (top) goes down (positive x)
+                // Player 1 (right) goes left (negative y), Player 3 (left) goes right (positive y)
+                let isMovingForward = false;
+                if (playerId === 0) isMovingForward = move.to.x < move.from.x; // Moving up
+                else if (playerId === 2) isMovingForward = move.to.x > move.from.x; // Moving down
+                else if (playerId === 1) isMovingForward = move.to.y < move.from.y; // Moving left
+                else if (playerId === 3) isMovingForward = move.to.y > move.from.y; // Moving right
+
+                const isAttacking = targetNode?.piece != null;
+
+                // Bonus for moving forward (toward enemy territory)
+                if (isMovingForward) {
+                    moveValue += 8000; // Encourage advancing!
+                }
+
+                // Large bonus for attacking (unless it's a known bomb/mine)
+                if (isAttacking) {
+                    const targetMem = memory.getMemory(targetNode!.piece!.id);
+                    const isSafeTarget = !targetMem?.isBombCandidate &&
+                        !targetMem?.possibleTypes.has(PieceType.Mine);
+                    if (isSafeTarget || !targetMem) {
+                        moveValue += 12000; // Reward attacking!
+                    }
+                }
+
+                // Penalty for staying in back rows in late game
+                // Back rows: P0 = rows 13-16, P2 = rows 0-3, P1 = cols 13-16, P3 = cols 0-3
+                let isInBackRows = false;
+                if (playerId === 0) isInBackRows = move.from.x >= 13;
+                else if (playerId === 2) isInBackRows = move.from.x <= 3;
+                else if (playerId === 1) isInBackRows = move.from.y >= 13;
+                else if (playerId === 3) isInBackRows = move.from.y <= 3;
+
+                if (isInBackRows && history.length > 40) { // After turn 40 = late-game
+                    moveValue -= 10000; // Get out of back rows!
                 }
             }
 
@@ -738,19 +791,37 @@ export class AIEvaluator {
                         const threatDistToFlag = threat.movesAway;
                         const myDistAfter = Math.abs(move.to.x - flagPos.r) + Math.abs(move.to.y - flagPos.c);
                         const myDistToThreat = Math.abs(move.to.x - threat.row) + Math.abs(move.to.y - threat.col);
+                        const myDistToThreatBefore = Math.abs(move.from.x - threat.row) + Math.abs(move.from.y - threat.col);
+
+                        // Determine piece strength for interception priority
+                        const isStrongPiece = [PieceType.Commander, PieceType.Corps, PieceType.Division, PieceType.Brigade].includes(sourceNode.piece.type);
+                        const strengthMultiplier = isStrongPiece ? 2.0 : 1.0; // Strong pieces get double bonus
 
                         // If I'm moving to a position that's:
                         // 1. Closer to flag than the threat is (blocking)
                         // 2. Also close to the threat (can intercept next turn)
                         if (myDistAfter < threatDistToFlag && myDistToThreat <= 2) {
-                            const urgencyBonus = Math.max(1, 4 - threatDistToFlag) * 10000; // Up to +30,000
+                            const urgencyBonus = Math.max(1, 4 - threatDistToFlag) * 15000 * strengthMultiplier; // Up to +60,000 for strong pieces
                             moveValue += urgencyBonus; // Good blocking position!
                         }
 
-                        // NEW: Bonus for moving TOWARDS the threat to intercept
-                        const myDistToThreatBefore = Math.abs(move.from.x - threat.row) + Math.abs(move.from.y - threat.col);
+                        // PRIORITY 1: Strong pieces intercept threats (move towards threat)
                         if (myDistToThreat < myDistToThreatBefore && threatDistToFlag <= 3) {
-                            moveValue += 20000; // Moving to intercept!
+                            const interceptBonus = isStrongPiece ? 40000 : 20000; // Strong pieces prioritized for interception
+                            moveValue += interceptBonus;
+                        }
+
+                        // PRIORITY 2: Any piece returning to flag area when threat is close
+                        if (threatDistToFlag <= 3) {
+                            const myDistToFlagBefore = Math.abs(move.from.x - flagPos.r) + Math.abs(move.from.y - flagPos.c);
+                            // If piece is far from flag and moving closer
+                            if (myDistToFlagBefore > 3 && myDistAfter < myDistToFlagBefore) {
+                                moveValue += 15000; // Return to defend!
+                            }
+                            // If piece is already near flag and staying near
+                            if (myDistAfter <= 2) {
+                                moveValue += 10000; // Holding defensive position
+                            }
                         }
                     }
                 }
