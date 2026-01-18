@@ -165,6 +165,7 @@ const Board = ({ disableBackground = false }: BoardProps) => {
         setHistory([]);
         setReplayIndex(-1);
         setPostPlayerDeathMoves(0); // Reset post-death counter
+        setUserMarks({}); // Reset user piece labels from previous game
 
         // Reset AI Memory on new game
         aiMemory.current.reset([]);
